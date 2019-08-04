@@ -1,4 +1,7 @@
+#define VERSION 3
+
 #include <Arduino.h>
+#define FASTLED_ESP8266_RAW_PIN_ORDER
 #include <FastLED.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
@@ -8,14 +11,16 @@
 #include <ArduinoOTA.h>
 #include <LedFunctions.h>
 #include <Protocol.h>
+
 // LED DEFINES
-#define FOREGROUND_NUM_LEDS 100
-#define BACKGROUND_NUM_LEDS 100
-#define ALL_NUM_LEDS FOREGROUND_NUM_LEDS+BACKGROUND_NUM_LEDS
-#define LED_PIN 6
+#define FOREGROUND_NUM_LEDS 90
+#define BACKGROUND_NUM_LEDS 90
+#define NUM_LEDS FOREGROUND_NUM_LEDS+BACKGROUND_NUM_LEDS
+#define LED_PIN 12
+#define ONBOARDLED 2 // 1, 17, 21, 22 nicht.
 
 // BUTTON DEFINES
-#define PUSHBUTTON D3
+#define BUTTONPIN 0
 #define LONGPUSH 2
 #define SHORTPUSH 1
 #define UNDECIDED 0
@@ -24,9 +29,15 @@
 
 // WIFI DEFINES
 #define K95WIFI
-#define DEBUG
 #define WIFI_WAIT 15
 const int ticker_port = 1103;	
+
+// DEBUG
+#ifdef DEBUG_ESP_PORT
+#define DEBUG_MSG(...) DEBUG_ESP_PORT.printf( __VA_ARGS__ )
+#else
+#define DEBUG_MSG(...)
+#endif
 
 /* LED VARIABLES */
 int group;
@@ -35,10 +46,10 @@ CRGB front_foreground;
 CRGB front_background;
 CRGB back_foreground;
 CRGB back_background;
-CRGB leds[FOREGROUND_NUM_LEDS+BACKGROUND_NUM_LEDS];
+CRGB leds[NUM_LEDS];
 CRGB * fg_leds = &leds[BACKGROUND_NUM_LEDS];
 CRGB * bg_leds = &leds[0];
-Pattern pattern(leds, ALL_NUM_LEDS);
+Pattern pattern(leds, NUM_LEDS);
 
 /* CHRISTOPH PATTERN VARIABLES */
 IPAddress remoteIP;
@@ -50,13 +61,12 @@ unsigned int commandCode = 48;
 char recvBuffer[MAX_PACKET_SIZE];
 
 WiFiUDP Udp;
-timeMeasurer mess;
 
-subscribeMessage subMesg;
+//subscribeMessage subMesg;
 synchronisingMessage syncMesg;
-settingMessage setMesg;
-pushingMessage pushMesg;
-statusingMessage statMesg;
+//settingMessage setMesg;
+//pushingMessage pushMesg;
+//statusingMessage statMesg;
 
 long millisSinceSync;
 long lastSync;
@@ -72,7 +82,7 @@ long lastSave;
 /* ESP VARIABLES */
 bool configMode = false;
 bool wifiMode = false;
-char chipName[30];
+char chipName[40];
 
 
 #ifdef BRAINWIFI
@@ -97,19 +107,39 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 /* LED FUNCTIONS */
+void flash(int times, CRGB  color) {
+  for(int i = 0; i < times; i++) {
+    fill_solid(leds, NUM_LEDS, color);
+    FastLED.show();
+    delay(250);
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(250);
+  }
+}
 
-
-
+void flashOnboard(int n) {
+  for (size_t i = 0; i < n; i++)
+  {
+  digitalWrite(ONBOARDLED, LOW);
+  delay(100);
+  digitalWrite(ONBOARDLED, HIGH);
+  delay(100);
+  }
+}
 
 /* SETUP FUNCTIONS */
 void setupChip() {
-  pinMode(PUSHBUTTON, INPUT_PULLUP);
+  pinMode(BUTTONPIN, INPUT_PULLUP);
+  pinMode(ONBOARDLED, OUTPUT);
   int32_t chipInteger = ESP.getChipId();
-  sprintf(chipName, "esp%08X", chipInteger);
+  sprintf(chipName, "bar_%08X_v%i", chipInteger, VERSION);
 }
 
 void setupLEDs() {
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, FOREGROUND_NUM_LEDS+BACKGROUND_NUM_LEDS);
+  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  FastLED.show();
 }
 
 void setupBeatListener() {
@@ -129,32 +159,24 @@ void setupBeatListener() {
 void setupOTA() {
  ArduinoOTA.setHostname(chipName);
  ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH)
-      type = "sketch";
-    else // U_SPIFFS
-      type = "filesystem";
-
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-    Serial.println("Start updating " + type);
+    DEBUG_MSG("Start updating ");
+    fill_solid(leds, NUM_LEDS, CRGB::Yellow);
+    FastLED.show();    
   });
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-    fill_solid(leds, ALL_NUM_LEDS, CRGB::Green);
+    DEBUG_MSG("\nEnd");
+    flash(3, CRGB::Azure);
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     int percent = progress / (total / 100);
-    Serial.printf("Progress: %u%%\r", percent);
-    fg_leds[percent] = CRGB::Azure;
-    FastLED.show();
+    if ((percent < NUM_LEDS) && (percent > 0)) {
+      fill_solid(leds, NUM_LEDS, CRGB::Black);
+      leds[percent] = CRGB::Green;
+      FastLED.show();
+    }
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    DEBUG_MSG("Error[%u]: \n", error);
   });
   ArduinoOTA.begin();
 }
@@ -162,16 +184,15 @@ void setupOTA() {
 void setup_wifi() {
   delay(10);
   // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  DEBUG_MSG();
+  DEBUG_MSG("Connecting to %s", ssid);
 
   WiFi.begin(ssid, password);
   
   int tries = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-    Serial.print(".");
+    DEBUG_MSG(".");
     tries++;
     if (tries > WIFI_WAIT) {
       wifiMode = false;
@@ -180,27 +201,27 @@ void setup_wifi() {
   }
   wifiMode = true;
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  DEBUG_MSG("");
+  DEBUG_MSG("WiFi connected");
+  DEBUG_MSG("IP address: ");
+  DEBUG_MSG(WiFi.localIP());
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.println();
-  Serial.println(topic);
-  Serial.println((char*) payload);
-  Serial.println();
+  DEBUG_MSG();
+  DEBUG_MSG(topic);
+  DEBUG_MSG((char*) payload);
+  DEBUG_MSG();
   if(strstr(topic, "group") != NULL) {
     if (strstr(topic, "set") != NULL) {
         if (configMode) {
         char value[20];
         strncpy(value, (char*)payload, length);
         group = atoi(value);
-        Serial.printf("Group Set: %u\n", group);
+        DEBUG_MSG("Group Set: %u\n", group);
       }
       else {
-        Serial.println("Not in config mode!");
+        DEBUG_MSG("Not in config mode!");
       }
     }
   }
@@ -210,24 +231,24 @@ void callback(char* topic, byte* payload, unsigned int length) {
         char value[20];
         strncpy(value, (char*)payload, length);
         position = atoi(value);
-        Serial.printf("Position Set: %u\n", position);
+        DEBUG_MSG("Position Set: %u\n", position);
       }
       else {
-        Serial.println("Not in config mode!");
+        DEBUG_MSG("Not in config mode!");
       }
     }
   }
   else if(strstr(topic, "mode") != NULL) {
-    Serial.println("Config mode Message");
+    DEBUG_MSG("Config mode Message");
     char value[50];
     strncpy(value, (char*)payload, length);
     if(strstr(value, "config") != NULL) {
       configMode = true;
-      Serial.println("Set mode to config mode");
+      DEBUG_MSG("Set mode to config mode");
     }
     else if(strstr(value, "normal") != NULL) {
       configMode = false;
-      Serial.println("Set mode to normal mode");     
+      DEBUG_MSG("Set mode to normal mode");     
   }
 }
 }
@@ -236,7 +257,7 @@ void setupMQTT() {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   client.connect(chipName);
-  Serial.println("Connecting to MQTT Broker...");
+  DEBUG_MSG("Connecting to MQTT Broker...");
   while (!client.connected()) {
     yield();
   }
@@ -244,23 +265,23 @@ void setupMQTT() {
   char topic0[100];
   sprintf(topic0, "bars/hello");
   client.publish(topic0, chipName);
-  Serial.println("Subscribed to:");
-  Serial.println(topic0);
+  DEBUG_MSG("Subscribed to:");
+  DEBUG_MSG(topic0);
 
   char topic1[100];
   sprintf(topic1, "bars/%s/position/set", chipName);
   client.subscribe(topic1);
-  Serial.println("Subscribed to:");
-  Serial.println(topic1);
+  DEBUG_MSG("Subscribed to:");
+  DEBUG_MSG(topic1);
 
   char topic2[100];
   sprintf(topic2, "bars/%s/group/set", chipName);
   client.subscribe(topic2);
-  Serial.println("Subscribed to:");
-  Serial.println(topic2);
+  DEBUG_MSG("Subscribed to:");
+  DEBUG_MSG(topic2);
 
   client.subscribe("brain/mode");
-  Serial.println("MQTT Setup DONE!");
+  DEBUG_MSG("MQTT Setup DONE!");
 }
 
 int checkButton() {
@@ -270,7 +291,7 @@ int checkButton() {
 
   if (digitalRead(PUSHBUTTON) == LOW) {
     if (!buttonPushed) {
-      Serial.println("button pressed."); 
+      DEBUG_MSG("button pressed."); 
       buttonPushed = true;
       buttonPressStart = millis();
       delay(50);
@@ -279,19 +300,18 @@ int checkButton() {
   }
   else {
     if (buttonPushed) {
-      Serial.println("button released.");
+      DEBUG_MSG("button released.");
       long timeHeld = millis() - buttonPressStart;
-      Serial.print("Held for: ");
-      Serial.println(timeHeld);
+      DEBUG_MSG("Held for: %i ", timeHeld);
       buttonPushed = false;
       delay(50);
       if (timeHeld > LONGPUSHTIME) {
         result = LONGPUSH;
-        Serial.println("result = longpush");
+        DEBUG_MSG("result = longpush");
       }
       else if (timeHeld > PUSHTHRESHOLD) {
         result = SHORTPUSH;
-        Serial.println("result = shortpush");
+        DEBUG_MSG("result = shortpush");
       }
       else {
         result = UNDECIDED;
@@ -304,14 +324,14 @@ int checkButton() {
 
 
   if (result == SHORTPUSH) {
-    Serial.println("publish shortpush");
+    DEBUG_MSG("publish shortpush");
     char topic[100];
     sprintf(topic, "bars/%s/button", chipName);
     client.publish(topic, "short");
   }
   else if (result == LONGPUSH)
   {
-    Serial.println("publish longpush");
+    DEBUG_MSG("publish longpush");
     char topic[100];
     sprintf(topic, "bars/%s/button", chipName);
     client.publish(topic, "long");    
@@ -361,7 +381,9 @@ void reactToMusic() {
 }
 
 void setup() {
+  #ifdef DEBUG_ESP_PORT
   Serial.begin(115200);
+  #endif
   setupChip();
   setupLEDs();
   setup_wifi();

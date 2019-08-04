@@ -6,6 +6,8 @@
 #include <Pattern.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <LedFunctions.h>
+#include <Protocol.h>
 // LED DEFINES
 #define FOREGROUND_NUM_LEDS 100
 #define BACKGROUND_NUM_LEDS 100
@@ -24,6 +26,7 @@
 #define K95WIFI
 #define DEBUG
 #define WIFI_WAIT 15
+const int ticker_port = 1103;	
 
 /* LED VARIABLES */
 int group;
@@ -37,7 +40,33 @@ CRGB * fg_leds = &leds[BACKGROUND_NUM_LEDS];
 CRGB * bg_leds = &leds[0];
 Pattern pattern(leds, ALL_NUM_LEDS);
 
-/* PATTERN COMBINATIONS */
+/* CHRISTOPH PATTERN VARIABLES */
+IPAddress remoteIP;
+unsigned int remotePort = 1103;
+unsigned int packetSize = 0;
+unsigned int commandCode = 48;
+#define MAX_PACKET_SIZE 32
+
+char recvBuffer[MAX_PACKET_SIZE];
+
+WiFiUDP Udp;
+timeMeasurer mess;
+
+subscribeMessage subMesg;
+synchronisingMessage syncMesg;
+settingMessage setMesg;
+pushingMessage pushMesg;
+statusingMessage statMesg;
+
+long millisSinceSync;
+long lastSync;
+long millisSinceBeat;
+long lastBeat;
+long millisSinceRequest;
+long lastRequest;
+long now;
+long lastSave;
+
 
 
 /* ESP VARIABLES */
@@ -81,6 +110,20 @@ void setupChip() {
 
 void setupLEDs() {
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, FOREGROUND_NUM_LEDS+BACKGROUND_NUM_LEDS);
+}
+
+void setupBeatListener() {
+  Udp.begin(ticker_port);
+  for (int i = 0; i < MAX_PACKET_SIZE; i++) {
+		recvBuffer[i] = '0';
+	}
+  millisSinceSync = 0;
+	lastSync = 0;
+	millisSinceBeat = 0;
+	lastBeat = 0;
+	millisSinceRequest = 0;
+	lastRequest = 0;
+	now = 0;
 }
 
 void setupOTA() {
@@ -276,6 +319,47 @@ int checkButton() {
   return result;
 }
 
+
+void setTimes() {
+	now = millis();
+	millisSinceSync = now - lastSync;
+	millisSinceBeat = now - lastBeat;
+	millisSinceRequest = now - lastRequest;
+	pattern.setMillisSinceBeat((double) millisSinceBeat);
+	pattern.setStrobeTime(millis()- pattern.getStrobeStart());
+}
+
+void reactToMusic() {
+  setTimes();
+  packetSize = Udp.parsePacket();
+	remoteIP = Udp.remoteIP();
+
+	//Lese das Packet und reagiere
+	if (packetSize > 0) {
+		if (packetSize <= MAX_PACKET_SIZE) {
+
+			Udp.read(recvBuffer, packetSize);
+			//Serial.print(recvBuffer);
+			//Checke ob Synchronisierungspacket
+			if (synchronising(recvBuffer, packetSize)) {
+				syncMesg.create(recvBuffer, packetSize);
+				if (syncMesg.direction == '0') {
+					pattern.setBeatPeriodMillis((double)syncMesg.beat_period_millis);
+					pattern.setBeatDistinctiveness((double)syncMesg.beat_distinctivness);
+					pattern.setMillisSinceBeat(0);
+					millisSinceBeat = 0;
+					lastBeat = millis();
+				}
+			}
+    }
+  }
+  pattern.baseChoser();
+  pattern.frontChoser();
+  pattern.strobeChoser();
+  FastLED.setCorrection(TypicalSMD5050);
+  FastLED.show((uint8_t)pattern.getDimVal());
+}
+
 void setup() {
   Serial.begin(115200);
   setupChip();
@@ -285,7 +369,7 @@ void setup() {
   if (wifiMode) {
     setupMQTT();
     setupOTA();
-    
+    setupBeatListener();    
   }
   else {
   }
@@ -298,7 +382,7 @@ void loop() {
 
     // to implement
     ArduinoOTA.handle();
-    //handleLEDs();
+    reactToMusic();
   }
   else {
     // noConnection show mode

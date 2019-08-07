@@ -57,6 +57,9 @@ unsigned int remotePort = 1103;
 unsigned int packetSize = 0;
 unsigned int commandCode = 48;
 #define MAX_PACKET_SIZE 32
+#define NUM_FRONT_PATTERNS 6
+#define NUM_BACK_PATTERNS 7
+#define NUM_STROBE_PATTERNS 4
 
 char recvBuffer[MAX_PACKET_SIZE];
 
@@ -272,6 +275,22 @@ void callback(char *topic, byte *payload, unsigned int length)
       DEBUG_MSG("Set mode to normal mode");
     }
   }
+  else if (strstr(topic, "Pattern") != NULL)
+  {
+    
+  }
+  else if (strstr(topic, "Dimm") != NULL)
+  {
+    
+  }
+  else if (strstr(topic, "Color") != NULL)
+  {
+    
+  }
+  else if (strstr(topic, "Speed") != NULL)
+  {
+    
+  }
 }
 
 void setupMQTT()
@@ -446,9 +465,11 @@ void setup()
     setupMQTT();
     setupOTA();
     setupBeatListener();
+    flash(5, CRGB::Green);
   }
   else
   {
+    flash(5, CRGB::Fuchsia);
   }
 }
 

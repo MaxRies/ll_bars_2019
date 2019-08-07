@@ -16,21 +16,28 @@
 #define OFFSET_COMP_BACK_2 3
 #define OFFSET_COMP_BACK_3 7
 #define OFFSET_COMP_BACK_4 11
+#define OFFSET_COMP_BACK_5 11
 
 #define LENGTH_COMP_BACK_1 3
 #define LENGTH_COMP_BACK_2 4
 #define LENGTH_COMP_BACK_3 4
 #define LENGTH_COMP_BACK_4 3
+#define LENGTH_COMP_BACK_5 3
 
 #define OFFSET_COMP_FRONT_1 25
 #define OFFSET_COMP_FRONT_2 21
 #define OFFSET_COMP_FRONT_3 17
 #define OFFSET_COMP_FRONT_4 14
+#define OFFSET_COMP_FRONT_5 14
 
 #define LENGTH_COMP_FRONT_1 3
 #define LENGTH_COMP_FRONT_2 4
 #define LENGTH_COMP_FRONT_3 4
 #define LENGTH_COMP_FRONT_4 3
+#define LENGTH_COMP_FRONT_5 5
+
+#define INPUT_MAX_VALUE 65280‬
+#define INPUT_MIN_VALUE 0
 
 #define BALL_COUNT 10
 struct ball{
@@ -154,6 +161,9 @@ class Pattern {
 	CRGB* combartmentback2;
 	CRGB* combartmentback3;
 	CRGB* combartmentback4;
+	CRGB* compartmentback5;
+
+	const int patternCombinations [167][3] = {{0, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0}, {4, 0, 0}, {5, 0, 0}, {0, 1, 0}, {1, 1, 0}, {2, 1, 0}, {3, 1, 0}, {4, 1, 0}, {5, 1, 0}, {0, 2, 0}, {1, 2, 0}, {2, 2, 0}, {3, 2, 0}, {4, 2, 0}, {5, 2, 0}, {0, 3, 0}, {1, 3, 0}, {2, 3, 0}, {3, 3, 0}, {4, 3, 0}, {5, 3, 0}, {0, 4, 0}, {1, 4, 0}, {2, 4, 0}, {3, 4, 0}, {4, 4, 0}, {5, 4, 0}, {0, 5, 0}, {1, 5, 0}, {2, 5, 0}, {3, 5, 0}, {4, 5, 0}, {5, 5, 0}, {0, 6, 0}, {1, 6, 0}, {2, 6, 0}, {3, 6, 0}, {4, 6, 0}, {5, 6, 0}, {0, 0, 1}, {1, 0, 1}, {2, 0, 1}, {3, 0, 1}, {4, 0, 1}, {5, 0, 1}, {0, 1, 1}, {1, 1, 1}, {2, 1, 1}, {3, 1, 1}, {4, 1, 1}, {5, 1, 1}, {0, 2, 1}, {1, 2, 1}, {2, 2, 1}, {3, 2, 1}, {4, 2, 1}, {5, 2, 1}, {0, 3, 1}, {1, 3, 1}, {2, 3, 1}, {3, 3, 1}, {4, 3, 1}, {5, 3, 1}, {0, 4, 1}, {1, 4, 1}, {2, 4, 1}, {3, 4, 1}, {4, 4, 1}, {5, 4, 1}, {0, 5, 1}, {1, 5, 1}, {2, 5, 1}, {3, 5, 1}, {4, 5, 1}, {5, 5, 1}, {0, 6, 1}, {1, 6, 1}, {2, 6, 1}, {3, 6, 1}, {4, 6, 1}, {5, 6, 1}, {0, 0, 2}, {1, 0, 2}, {2, 0, 2}, {3, 0, 2}, {4, 0, 2}, {5, 0, 2}, {0, 1, 2}, {1, 1, 2}, {2, 1, 2}, {3, 1, 2}, {4, 1, 2}, {5, 1, 2}, {0, 2, 2}, {1, 2, 2}, {2, 2, 2}, {3, 2, 2}, {4, 2, 2}, {5, 2, 2}, {0, 3, 2}, {1, 3, 2}, {2, 3, 2}, {3, 3, 2}, {4, 3, 2}, {5, 3, 2}, {0, 4, 2}, {1, 4, 2}, {2, 4, 2}, {3, 4, 2}, {4, 4, 2}, {5, 4, 2}, {0, 5, 2}, {1, 5, 2}, {2, 5, 2}, {3, 5, 2}, {4, 5, 2}, {5, 5, 2}, {0, 6, 2}, {1, 6, 2}, {2, 6, 2}, {3, 6, 2}, {4, 6, 2}, {5, 6, 2}, {0, 0, 3}, {1, 0, 3}, {2, 0, 3}, {3, 0, 3}, {4, 0, 3}, {5, 0, 3}, {0, 1, 3}, {1, 1, 3}, {2, 1, 3}, {3, 1, 3}, {4, 1, 3}, {5, 1, 3}, {0, 2, 3}, {1, 2, 3}, {2, 2, 3}, {3, 2, 3}, {4, 2, 3}, {5, 2, 3}, {0, 3, 3}, {1, 3, 3}, {2, 3, 3}, {3, 3, 3}, {4, 3, 3}, {5, 3, 3}, {0, 4, 3}, {1, 4, 3}, {2, 4, 3}, {3, 4, 3}, {4, 4, 3}, {5, 4, 3}, {0, 5, 3}, {1, 5, 3}, {2, 5, 3}, {3, 5, 3}, {4, 5, 3}, {5, 5, 3}, {0, 6, 3}, {1, 6, 3}, {2, 6, 3}, {3, 6, 3}, {4, 6, 3}, {5, 6, 3}};
 
 public:
 	EEpromSave savedVals;
@@ -206,6 +216,8 @@ public:
 	void frontChoser();
 	void baseChoser();
 	void strobeChoser();
+
+	void patternChooser(int number);
 
 	const CRGB& getBaseColor() const {
 		return baseColor;
@@ -312,7 +324,7 @@ public:
 	}
 
 	void setNfrontPattern(double nfrontPattern) {
-		this->nfrontPattern = nfrontPattern;
+		this->nfrontPattern = nfrontPattern;	
 	}
 
 	double getNstrobePattern() const {

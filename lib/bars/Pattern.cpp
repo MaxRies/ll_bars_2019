@@ -28,9 +28,6 @@ Pattern::Pattern(CRGB* leds, size_t length) {
 	nstrobeDim = 1;
 	dimVal = 1;
 	dutyCycle = 1;
-
-
-
 }
 
 Pattern::~Pattern() {
@@ -469,7 +466,7 @@ void Pattern::strobeStandard() {
 
 void Pattern::strobeRand() {
 	if(millisSinceBeat == 0 && first == true){
-		strobe_comp = rand() % 4;
+		strobe_comp = rand() % 5;
 		first = false;
 	}
 	else{
@@ -494,8 +491,8 @@ void Pattern::strobeHalf() {
 		first = true;
 	}
 	if(strobe_time % (int)(nstrobeSpeed) < 20){
-		fillCompartmentBack(dimByVal(strobeColor, nstrobeDim), strobe_comp%4);
-		fillCompartmentFront(dimByVal(strobeColor, nstrobeDim), strobe_comp%4);
+		fillCompartmentBack(dimByVal(strobeColor, nstrobeDim), strobe_comp%5);
+		fillCompartmentFront(dimByVal(strobeColor, nstrobeDim), strobe_comp%5);
 	}
 	else{
 		fill_solid(leds, length, CRGB::Black);
@@ -529,6 +526,7 @@ void Pattern::strobePow() {
 }
 
 void Pattern::fillWhite() {
+	fill_solid(leds, length, CRGB::White);
 }
 
 CRGB Pattern::colors(int color) {
@@ -671,6 +669,9 @@ void Pattern::fillCompartmentBack(CRGB color, int num) {
 	case 3:
 		fill_solid(leds + OFFSET_COMP_BACK_4, LENGTH_COMP_BACK_4, color);
 		break;
+	case 4:
+		fill_solid(leds + OFFSET_COMP_BACK_5, LENGTH_COMP_BACK_5, color);
+		break;
 	}
 }
 
@@ -688,6 +689,9 @@ void Pattern::fillCompartmentFront(CRGB color, int num) {
 	case 3:
 		fill_solid(leds + OFFSET_COMP_FRONT_4, LENGTH_COMP_FRONT_4, color);
 		break;
+	case 4:
+		fill_solid(leds + OFFSET_COMP_FRONT_5, LENGTH_COMP_FRONT_5, color);
+		break;
 	}
 }
 void Pattern::fillCompartementOneRand(CRGB color, int num){
@@ -703,6 +707,9 @@ void Pattern::fillCompartementOneRand(CRGB color, int num){
 		break;
 	case 3:
 		fill_solid(leds + OFFSET_COMP_BACK_4 + rand() % LENGTH_COMP_BACK_4, 1, color);
+		break;
+	case 4:
+		fill_solid(leds + OFFSET_COMP_BACK_5 + rand() % LENGTH_COMP_BACK_5, 1, color);
 		break;
 	}
 }
@@ -732,6 +739,10 @@ void Pattern::strobeChoser() {
 		break;
 	}
 
+}
+
+void Pattern::patternChooser(int number) {
+	
 }
 
 CRGB Pattern::dimByVal(CRGB& color, double Value) {

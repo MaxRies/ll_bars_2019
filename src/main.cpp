@@ -1,4 +1,4 @@
-#define VERSION 3
+#define VERSION 4
 
 #include <Arduino.h>
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -28,7 +28,7 @@
 #define PUSHTHRESHOLD 200
 
 // WIFI DEFINES
-#define K95WIFI
+#define BRAINWIFI
 #define WIFI_WAIT 15
 const int ticker_port = 1103;
 
@@ -50,6 +50,8 @@ CRGB leds[NUM_LEDS];
 CRGB *fg_leds = &leds[BACKGROUND_NUM_LEDS];
 CRGB *bg_leds = &leds[0];
 Pattern pattern(leds, NUM_LEDS);
+int noWifiShowPattern = 1;
+bool autoShowOn = false;
 
 /* CHRISTOPH PATTERN VARIABLES */
 IPAddress remoteIP;
@@ -131,6 +133,34 @@ void flashOnboard(int n)
   }
 }
 
+void nextShow() {
+  noWifiShowPattern++;
+  noWifiShowPattern > 167 ? 0 : noWifiShowPattern;
+  pattern.patternChooser(noWifiShowPattern);
+}
+
+void autoShow() {
+  static long lastChange = 0;
+  if (autoShowOn) {
+    long now = millis();
+    if (lastChange - now > 300000) {
+      nextShow();
+      lastChange = now;
+    }
+  }
+}
+
+void toggleAutoShow() {
+  if (autoShowOn) {
+    autoShowOn = false;
+    flash(1, CRGB::Red);
+  }
+  else {
+    autoShowOn = true;
+    flash(1, CRGB::Green);
+  }
+}
+
 /* SETUP FUNCTIONS */
 void setupChip()
 {
@@ -138,6 +168,7 @@ void setupChip()
   pinMode(ONBOARDLED, OUTPUT);
   int32_t chipInteger = ESP.getChipId();
   sprintf(chipName, "bar_%08X_v%i", chipInteger, VERSION);
+  DEBUG_MSG("CHIP NAME: %s \n", chipName);
 }
 
 void setupLEDs()
@@ -165,6 +196,7 @@ void setupBeatListener()
 
 void setupOTA()
 {
+  DEBUG_MSG("Setting up OTA...\n");
   ArduinoOTA.setHostname(chipName);
   ArduinoOTA.onStart([]() {
     DEBUG_MSG("Start updating ");
@@ -172,7 +204,7 @@ void setupOTA()
     FastLED.show();
   });
   ArduinoOTA.onEnd([]() {
-    DEBUG_MSG("\nEnd");
+    DEBUG_MSG("End \n");
     flash(3, CRGB::Azure);
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -188,13 +220,13 @@ void setupOTA()
     DEBUG_MSG("Error[%u]: \n", error);
   });
   ArduinoOTA.begin();
+  DEBUG_MSG("OTA READY! \n");
 }
 
 void setup_wifi()
 {
   delay(10);
   // We start by connecting to a WiFi network
-  DEBUG_MSG();
   DEBUG_MSG("Connecting to %s", ssid);
 
   WiFi.begin(ssid, password);
@@ -213,18 +245,14 @@ void setup_wifi()
   }
   wifiMode = true;
 
-  DEBUG_MSG("");
-  DEBUG_MSG("WiFi connected");
-  DEBUG_MSG("IP address: ");
-  DEBUG_MSG(WiFi.localIP());
+  DEBUG_MSG("WiFi connected\n");
+  // DEBUG_MSG("IP address: %u", WiFi.localIP().toString());
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-  DEBUG_MSG();
-  DEBUG_MSG(topic);
-  DEBUG_MSG((char *)payload);
-  DEBUG_MSG();
+  DEBUG_MSG("tpic: %s \n", topic);
+  DEBUG_MSG("message: %s \n", (char *)payload);
   if (strstr(topic, "group") != NULL)
   {
     if (strstr(topic, "set") != NULL)
@@ -277,21 +305,39 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if (strstr(topic, "Pattern") != NULL)
   {
-    int patternNumber = int(payload);
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int patternNumber = map(rawNumber, 0, 65536, 0, 167);
     pattern.patternChooser(patternNumber);
-    DEBUG_MSG("SET PATTERN NUMBER TO: %i", patternNumber);
+    DEBUG_MSG("SET PATTERN NUMBER TO: %i \n", patternNumber);
   }
   else if (strstr(topic, "Dimm") != NULL)
   {
-    
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int dimFactor = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setDimVal(dimFactor);
+    DEBUG_MSG("SET DIM FACTOR TO: %i \n", dimFactor);
   }
   else if (strstr(topic, "Color") != NULL)
   {
-    
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int colorNumber = map(rawNumber, 0, 65536, 0, 447);
+    pattern.colorChooser(colorNumber);
+    DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
   }
   else if (strstr(topic, "Speed") != NULL)
   {
-    
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int colorNumber = map(rawNumber, 0, 65536, 0, 447);
+    pattern.colorChooser(colorNumber);
+    DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
   }
 }
 
@@ -396,13 +442,24 @@ int checkButton()
       sprintf(topic, "LLBars/%s/button", chipName);
       client.publish(topic, "short");
     }
+    else {
+      nextShow();
+      DEBUG_MSG("NEXT SHOW");
+    }
   }
   else if (result == LONGPUSH)
   {
+    if (wifiMode) 
+    {
     DEBUG_MSG("publish longpush");
     char topic[100];
     sprintf(topic, "LLBars/%s/button", chipName);
     client.publish(topic, "long");
+    }
+    else {
+      toggleAutoShow();
+      DEBUG_MSG("AUTOSHOW TOGGLED");
+    }
   }
   return result;
 }
@@ -437,6 +494,7 @@ void reactToMusic()
         syncMesg.create(recvBuffer, packetSize);
         if (syncMesg.direction == '0')
         {
+          DEBUG_MSG("REAL BEAT \n");
           pattern.setBeatPeriodMillis((double)syncMesg.beat_period_millis);
           pattern.setBeatDistinctiveness((double)syncMesg.beat_distinctivness);
           pattern.setMillisSinceBeat(0);
@@ -453,21 +511,45 @@ void reactToMusic()
   FastLED.show((uint8_t)pattern.getDimVal());
 }
 
-void blinkLed() {
+void lightshow()
+{
+  long now = millis();
+
+  if (now - lastBeat > 500)
+  {
+    pattern.setBeatPeriodMillis(500);
+    pattern.setMillisSinceBeat(0);
+    millisSinceBeat = 0;
+    lastBeat = now;
+    DEBUG_MSG("FAKE BEAT \n");
+  }
+
+  pattern.baseChoser();
+  pattern.frontChoser();
+  pattern.strobeChoser();
+  FastLED.setCorrection(TypicalSMD5050);
+  FastLED.show((uint8_t)pattern.getDimVal());
+}
+
+void blinkLed()
+{
   static long lastBlink = millis();
   static bool ledOn = false;
   long now = millis();
-  if (now - lastBlink  > 1000) {
+  if (now - lastBlink > 1000)
+  {
     lastBlink = now;
-    if (!ledOn) {
-    digitalWrite(ONBOARDLED, HIGH);
-    ledOn = true;
-    Serial.println("ON");
+    if (!ledOn)
+    {
+      digitalWrite(ONBOARDLED, HIGH);
+      ledOn = true;
+      //DEBUG_MSG("ON");
     }
-    else {
+    else
+    {
       digitalWrite(ONBOARDLED, LOW);
       ledOn = false;
-      Serial.println("OFF");
+      //DEBUG_MSG("OFF");
     }
   }
 }
@@ -504,9 +586,12 @@ void loop()
     // to implement
     ArduinoOTA.handle();
     reactToMusic();
+    //lightshow();
   }
   else
   {
     // noConnection show mode
+    checkButton();
+    lightshow();
   }
 }

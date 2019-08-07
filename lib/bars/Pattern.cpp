@@ -16,17 +16,17 @@ Pattern::Pattern(CRGB* leds, size_t length) {
 	this->side_length = length / 2;
 	nbasePattern = 1;
 	nbaseColor = 1;
-	nbaseSpeed = 1;
-	nbaseDim = 1;
+	nbaseSpeed = 100;
+	nbaseDim = 225;
 	nfrontPattern = 1;
 	nfrontColor = 1;
-	nfrontSpeed = 1;
-	nfrontDim = 1;
+	nfrontSpeed = 100;
+	nfrontDim = 225;
 	nstrobePattern = 1;
 	nstrobeColor = 1;
 	nstrobeSpeed = 25;
-	nstrobeDim = 1;
-	dimVal = 1;
+	nstrobeDim = 255;
+	dimVal = 255;
 	dutyCycle = 1;
 }
 
@@ -561,14 +561,10 @@ CRGB Pattern::colors(int color) {
 		break;
 
 	case 8:
-		ret = CRGB::Red;
-		break;
-
-	case 9:
 		ret = CRGB::Sienna;
 		break;
 
-	case 10:
+	case 9:
 		ret = CRGB::Fuchsia;
 		break;
 	default:
@@ -742,7 +738,36 @@ void Pattern::strobeChoser() {
 }
 
 void Pattern::patternChooser(int number) {
-	
+	/*
+		@param number between 0 and 167.
+	 */
+	if (number < 0) {
+		number = 0;
+	}
+	else if	(number > 167) {
+		number = 167;
+	}
+
+	nfrontPattern = patternCombinations[number][0];
+	nbasePattern = patternCombinations[number][1];
+	nstrobePattern = patternCombinations[number][2];
+}
+
+void Pattern::colorChooser(int number) {
+	/*
+		
+	 */
+	if (number < 0) {
+		number = 0;
+	}
+	else if	(number > 447) {
+		number = 447;
+	}
+	nfrontColor = colorCombinations[number][0];
+	nbaseColor = colorCombinations[number][1];
+	nstrobeColor = colorCombinations[number][2];
+
+	setSettings();
 }
 
 CRGB Pattern::dimByVal(CRGB& color, double Value) {

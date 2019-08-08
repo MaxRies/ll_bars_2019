@@ -21,11 +21,11 @@ Pattern::Pattern(CRGB* leds, size_t length) {
 	nfrontPattern = 1;
 	nfrontColor = 1;
 	nfrontSpeed = 100;
-	nfrontDim = 225;
+	nfrontDim = 120;
 	nstrobePattern = 1;
 	nstrobeColor = 1;
-	nstrobeSpeed = 25;
-	nstrobeDim = 255;
+	nstrobeSpeed = 20;
+	nstrobeDim = 200;
 	dimVal = 255;
 	dutyCycle = 1;
 }

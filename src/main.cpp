@@ -13,8 +13,8 @@
 #include <Protocol.h>
 
 // LED DEFINES
-#define FOREGROUND_NUM_LEDS 90
-#define BACKGROUND_NUM_LEDS 90
+#define FOREGROUND_NUM_LEDS 66
+#define BACKGROUND_NUM_LEDS 66
 #define NUM_LEDS FOREGROUND_NUM_LEDS + BACKGROUND_NUM_LEDS
 #define LED_PIN 12
 #define ONBOARDLED 2 // 1, 17, 21, 22 nicht.
@@ -384,6 +384,60 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.colorChooser(colorNumber);
     DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
   }
+  else if (strstr(topic, "basespeed") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNbaseSpeed(number);
+    DEBUG_MSG("SET basespeed TO: %i \n", number);
+  }
+  else if (strstr(topic, "frontspeed") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNfrontSpeed(number);
+    DEBUG_MSG("SET frontspeed TO: %i \n", number);
+  }
+  else if (strstr(topic, "basedim") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNbaseDim(number);
+    DEBUG_MSG("SET basedim TO: %i \n", number);
+  }
+  else if (strstr(topic, "frontdim") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNfrontDim(number);
+    DEBUG_MSG("SET frontdim TO: %i \n", number);
+  }
+  else if (strstr(topic, "strobespeed") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNstrobeSpeed(number);
+    DEBUG_MSG("SET strobespeed TO: %i \n", number);
+  }
+  else if (strstr(topic, "strobedim") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNstrobeDim(number);
+    DEBUG_MSG("SET strobedim TO: %i \n", number);
+  }
 }
 
 void setupMQTT()
@@ -435,6 +489,24 @@ void setupMQTT()
 
   client.subscribe("LLBars/Speed");
   DEBUG_MSG("Subscribed to: LLBars/Speed\n");
+
+  client.subscribe("LLBars/basespeed");
+  DEBUG_MSG("Subscribed to: LLBars/basespeed\n");
+
+  client.subscribe("LLBars/frontspeed");
+  DEBUG_MSG("Subscribed to: LLBars/frontspeed\n");
+
+  client.subscribe("LLBars/basedim");  
+  DEBUG_MSG("Subscribed to: LLBars/basedim\n");
+
+  client.subscribe("LLBars/frontdim");
+  DEBUG_MSG("Subscribed to: LLBars/frontdim\n");
+
+  client.subscribe("LLBars/strobespeed");
+  DEBUG_MSG("Subscribed to: LLBars/strobespeed\n");
+
+  client.subscribe("LLBars/strobedim");
+  DEBUG_MSG("Subscribed to: LLBars/strobedim\n");
 
   client.subscribe("brain/mode");
   DEBUG_MSG("MQTT Setup DONE!");

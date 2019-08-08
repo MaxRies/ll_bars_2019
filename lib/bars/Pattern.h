@@ -53,54 +53,6 @@ struct ball{
 
 };
 
-struct EEpromSave{
-	union{
-		struct{
-			double nbasePattern;
-			double nbaseColor;
-			double nbaseSpeed;
-			double nbaseDim;
-			double nfrontPattern;
-			double nfrontColor;
-			double nfrontSpeed;
-			double nfrontDim;
-			double nstrobePattern;
-			double nstrobeColor;
-			double nstrobeSpeed;
-			double nstrobeDim;
-			double dimVal;
-			double dutyCycle;
-		};
-		char buffer[112];
-	};
-	const size_t length = 112;
-
-	inline EEpromSave(){
-		for(size_t i = 0; i < length; i++){
-			buffer[i] = 0;
-		}
-	}
-
-	inline EEpromSave& operator= (const EEpromSave& mesg){
-
-		for(size_t i = 0; i < length; i++){
-			this->buffer[i] = mesg.buffer[i];
-		}
-		return *this;
-	}
-
-	inline void read(){
-		for(size_t i = 0; i < length; i++){
-			buffer[i] = EEPROM.read(i);
-		}
-	}
-
-	inline void write(){
-		for(size_t i = 0; i < length; i++){
-			EEPROM.write(i, buffer[i]);
-		}
-	}
-};
 
 
 class Pattern {

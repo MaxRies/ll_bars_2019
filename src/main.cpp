@@ -30,6 +30,7 @@
 // WIFI DEFINES
 #define BRAINWIFI
 #define WIFI_WAIT 15
+#define MQTT_WAIT 15
 const int ticker_port = 1103;
 
 // DEBUG
@@ -122,6 +123,30 @@ void flash(int times, CRGB color)
   }
 }
 
+void flashLoop(CRGB color)
+{
+  static long lastBlink = millis();
+  static bool ledOn = false;
+  long now = millis();
+  if (now - lastBlink > 500)
+  {
+    DEBUG_MSG(".");
+    lastBlink = now;
+    if (!ledOn)
+    {
+      fill_solid(leds, NUM_LEDS, color);
+      FastLED.show();
+      ledOn = true;
+    }
+    else
+    {
+      fill_solid(leds, NUM_LEDS, CRGB::Black);
+      FastLED.show();
+      ledOn = false;
+    }
+  }
+}
+
 void flashOnboard(int n)
 {
   for (size_t i = 0; i < n; i++)
@@ -133,29 +158,39 @@ void flashOnboard(int n)
   }
 }
 
-void nextShow() {
+void nextShow()
+{
   noWifiShowPattern++;
-  noWifiShowPattern > 167 ? 0 : noWifiShowPattern;
+  if (noWifiShowPattern > 167)
+  {
+    noWifiShowPattern = 0;
+  }
   pattern.patternChooser(noWifiShowPattern);
 }
 
-void autoShow() {
+void autoShow()
+{
   static long lastChange = 0;
-  if (autoShowOn) {
+  if (autoShowOn)
+  {
     long now = millis();
-    if (lastChange - now > 300000) {
+    if (lastChange - now > 300000)
+    {
       nextShow();
       lastChange = now;
     }
   }
 }
 
-void toggleAutoShow() {
-  if (autoShowOn) {
+void toggleAutoShow()
+{
+  if (autoShowOn)
+  {
     autoShowOn = false;
     flash(1, CRGB::Red);
   }
-  else {
+  else
+  {
     autoShowOn = true;
     flash(1, CRGB::Green);
   }
@@ -176,6 +211,7 @@ void setupLEDs()
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
+  flash(3, CRGB::Red);
 }
 
 void setupBeatListener()
@@ -217,6 +253,9 @@ void setupOTA()
     }
   });
   ArduinoOTA.onError([](ota_error_t error) {
+    fill_solid(leds, NUM_LEDS, CRGB::Red);
+    FastLED.show();
+    delay(3000);
     DEBUG_MSG("Error[%u]: \n", error);
   });
   ArduinoOTA.begin();
@@ -231,27 +270,33 @@ void setup_wifi()
 
   WiFi.begin(ssid, password);
 
-  int tries = 0;
+  wifiMode = true;
+  long startConnection = millis();
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(1000);
-    DEBUG_MSG(".");
-    tries++;
-    if (tries > WIFI_WAIT)
+    flashLoop(CRGB::Red);
+    if (millis() - startConnection > (WIFI_WAIT * 1000))
     {
       wifiMode = false;
       break;
     }
   }
-  wifiMode = true;
-
-  DEBUG_MSG("WiFi connected\n");
+  if (wifiMode)
+  {
+    flash(3, CRGB::ForestGreen);
+    DEBUG_MSG("WiFi connected\n");
+  }
+  else
+  {
+    flash(3, CRGB::Fuchsia);
+    DEBUG_MSG("NO WIFI FOUND\n");
+  }
   // DEBUG_MSG("IP address: %u", WiFi.localIP().toString());
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-  DEBUG_MSG("tpic: %s \n", topic);
+  DEBUG_MSG("topic: %s \n", topic);
   DEBUG_MSG("message: %s \n", (char *)payload);
   if (strstr(topic, "group") != NULL)
   {
@@ -347,8 +392,17 @@ void setupMQTT()
   client.setCallback(callback);
   client.connect(chipName);
   DEBUG_MSG("Connecting to MQTT Broker...");
+
+  long startConnecting = millis();
   while (!client.connected())
   {
+    flashLoop(CRGB::Blue);
+
+    if (millis() - startConnecting > (MQTT_WAIT * 1000))
+    {
+      wifiMode = false;
+      return;
+    }
     yield();
   }
 
@@ -442,21 +496,23 @@ int checkButton()
       sprintf(topic, "LLBars/%s/button", chipName);
       client.publish(topic, "short");
     }
-    else {
+    else
+    {
       nextShow();
       DEBUG_MSG("NEXT SHOW");
     }
   }
   else if (result == LONGPUSH)
   {
-    if (wifiMode) 
+    if (wifiMode)
     {
-    DEBUG_MSG("publish longpush");
-    char topic[100];
-    sprintf(topic, "LLBars/%s/button", chipName);
-    client.publish(topic, "long");
+      DEBUG_MSG("publish longpush");
+      char topic[100];
+      sprintf(topic, "LLBars/%s/button", chipName);
+      client.publish(topic, "long");
     }
-    else {
+    else
+    {
       toggleAutoShow();
       DEBUG_MSG("AUTOSHOW TOGGLED");
     }

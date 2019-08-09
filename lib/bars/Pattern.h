@@ -39,6 +39,12 @@
 #define INPUT_MAX_VALUE 65280‬
 #define INPUT_MIN_VALUE 0
 
+#ifdef DEBUG_ESP_PORT
+#define DEBUG_MSG(...) DEBUG_ESP_PORT.printf(__VA_ARGS__)
+#else
+#define DEBUG_MSG(...)
+#endif
+
 #define BALL_COUNT 10
 struct ball{
 	uint8_t pos;
@@ -60,7 +66,8 @@ struct valsToSave {
 	double nFrontSpeed;
 	double nStrobeDim;
 	double nStrobeSpeed;
-
+	bool pristine0;
+	bool pristine1;
 };
 
 

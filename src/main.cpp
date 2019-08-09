@@ -1,4 +1,4 @@
-#define VERSION 4
+#define VERSION 6
 
 #include <Arduino.h>
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -168,6 +168,18 @@ void nextShow()
   pattern.patternChooser(noWifiShowPattern);
 }
 
+void nextShow(int show) {
+  if (show > 167)
+  {
+    show = 167;
+  }
+  else if (show < 0)
+  {
+    show = 0;
+  }
+  pattern.patternChooser(show);
+}
+
 void autoShow()
 {
   static long lastChange = 0;
@@ -212,6 +224,7 @@ void setupLEDs()
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
   flash(3, CRGB::Red);
+  pattern.getValues();
 }
 
 void setupBeatListener()
@@ -280,6 +293,7 @@ void setup_wifi()
       wifiMode = false;
       break;
     }
+    yield();
   }
   if (wifiMode)
   {
@@ -392,6 +406,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNbaseSpeed(number);
     DEBUG_MSG("SET basespeed TO: %i \n", number);
+    pattern.saveValues();
   }
   else if (strstr(topic, "frontspeed") != NULL)
   {
@@ -401,6 +416,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNfrontSpeed(number);
     DEBUG_MSG("SET frontspeed TO: %i \n", number);
+    pattern.saveValues();
   }
   else if (strstr(topic, "basedim") != NULL)
   {
@@ -410,6 +426,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNbaseDim(number);
     DEBUG_MSG("SET basedim TO: %i \n", number);
+    pattern.saveValues();
   }
   else if (strstr(topic, "frontdim") != NULL)
   {
@@ -419,6 +436,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNfrontDim(number);
     DEBUG_MSG("SET frontdim TO: %i \n", number);
+    pattern.saveValues();
   }
   else if (strstr(topic, "strobespeed") != NULL)
   {
@@ -428,6 +446,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNstrobeSpeed(number);
     DEBUG_MSG("SET strobespeed TO: %i \n", number);
+    pattern.saveValues();
   }
   else if (strstr(topic, "strobedim") != NULL)
   {
@@ -437,6 +456,16 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNstrobeDim(number);
     DEBUG_MSG("SET strobedim TO: %i \n", number);
+    pattern.saveValues();
+  }
+  else if (strstr(topic, "showpattern") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 167);
+    nextShow(number);
+    DEBUG_MSG("SET showpattern TO: %i \n", number);
   }
 }
 
@@ -507,6 +536,9 @@ void setupMQTT()
 
   client.subscribe("LLBars/strobedim");
   DEBUG_MSG("Subscribed to: LLBars/strobedim\n");
+
+  client.subscribe("LLBars/showpattern");
+  DEBUG_MSG("Subscribed to: LLBars/showpattern\n");
 
   client.subscribe("brain/mode");
   DEBUG_MSG("MQTT Setup DONE!");
@@ -641,6 +673,7 @@ void reactToMusic()
 
 void lightshow()
 {
+  setTimes();
   long now = millis();
 
   if (now - lastBeat > 500)
@@ -711,10 +744,9 @@ void loop()
   {
     checkButton();
     client.loop();
-    // to implement
     ArduinoOTA.handle();
-    reactToMusic();
-    //lightshow();
+    //reactToMusic();
+    lightshow();
   }
   else
   {

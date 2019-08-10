@@ -258,10 +258,12 @@ void setupOTA()
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     int percent = progress / (total / 100);
-    if ((percent < NUM_LEDS) && (percent > 0))
+    int ID = (int) 74.0 * (percent / 100.0);
+    if ((ID < NUM_LEDS) && (ID > 0))
     {
+      
       fill_solid(leds, NUM_LEDS, CRGB::Black);
-      leds[percent] = CRGB::Green;
+      leds[ID] = CRGB::Green;
       FastLED.show();
     }
   });
@@ -739,28 +741,14 @@ void setup()
 
 void loop()
 {
-  static int comp = 0;
-  static long lastChange = 0;
-  long now = millis();
   blinkLed();
   if (wifiMode)
   {
     checkButton();
     client.loop();
     ArduinoOTA.handle();
-    //reactToMusic();
+    reactToMusic();
     //lightshow();
-    if (now - lastChange > 5000) {
-      comp++;
-      lastChange = now;
-    }
-    if (comp > 4) {
-      comp = 0;
-    }
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
-    pattern.fillCompartmentBack(CRGB::Blue, comp);
-    pattern.fillCompartmentFront(CRGB::Red, comp);
-    FastLED.show();
   }
   else
   {

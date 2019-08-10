@@ -1,4 +1,4 @@
-#define VERSION 6
+#define VERSION 10
 
 #include <Arduino.h>
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -318,34 +318,24 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     if (strstr(topic, "set") != NULL)
     {
-      if (configMode)
-      {
+      // Always accept group or position number!
         char value[20];
         strncpy(value, (char *)payload, length);
         group = atoi(value);
         DEBUG_MSG("Group Set: %u\n", group);
-      }
-      else
-      {
-        DEBUG_MSG("Not in config mode!");
-      }
+        flash(group, CRGB::Purple);
     }
   }
   else if (strstr(topic, "position") != NULL)
   {
     if (strstr(topic, "set") != NULL)
     {
-      if (configMode)
-      {
+      // Always accept group or position number!
         char value[20];
         strncpy(value, (char *)payload, length);
         position = atoi(value);
         DEBUG_MSG("Position Set: %u\n", position);
-      }
-      else
-      {
-        DEBUG_MSG("Not in config mode!");
-      }
+        flash(position, CRGB::Tomato);
     }
   }
   else if (strstr(topic, "mode") != NULL)
@@ -357,11 +347,13 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
       configMode = true;
       DEBUG_MSG("Set mode to config mode");
+      flash(3, CRGB::Yellow);
     }
     else if (strstr(value, "normal") != NULL)
     {
       configMode = false;
       DEBUG_MSG("Set mode to normal mode");
+      flash(3, CRGB::Blue);
     }
   }
   else if (strstr(topic, "Pattern") != NULL)
@@ -396,9 +388,11 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int colorNumber = map(rawNumber, 0, 65536, 0, 447);
-    pattern.colorChooser(colorNumber);
-    DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
+    int number = map(rawNumber, 0, 65536, 0, 225);
+    pattern.setNbaseSpeed(number);
+    pattern.setNfrontSpeed(number);
+    pattern.setNstrobeSpeed(number);
+    DEBUG_MSG("SET SPEED TO: %i \n", number);
   }
   else if (strstr(topic, "basespeed") != NULL)
   {
@@ -597,10 +591,16 @@ int checkButton()
   {
     if (wifiMode)
     {
-      DEBUG_MSG("publish shortpush");
-      char topic[100];
-      sprintf(topic, "LLBars/%s/button", chipName);
-      client.publish(topic, "short");
+      if (configMode) 
+      {
+        DEBUG_MSG("publish shortpush");
+        char topic[100];
+        sprintf(topic, "LLBars/%s/button", chipName);
+        client.publish(topic, "short");
+      }
+      else {
+        flash(3, CRGB::White);
+      }
     }
     else
     {
@@ -612,10 +612,12 @@ int checkButton()
   {
     if (wifiMode)
     {
-      DEBUG_MSG("publish longpush");
-      char topic[100];
-      sprintf(topic, "LLBars/%s/button", chipName);
-      client.publish(topic, "long");
+      if (configMode) {
+        DEBUG_MSG("publish longpush");
+        char topic[100];
+        sprintf(topic, "LLBars/%s/button", chipName);
+        client.publish(topic, "long");
+      }
     }
     else
     {
@@ -717,6 +719,27 @@ void blinkLed()
   }
 }
 
+void connectionCheck() {
+  static long lastTryWifi = 0;
+  static long lastTryMQTT = 0;
+  static int mqttChecks = 0;
+  long now = millis();
+  if (WiFi.status() != WL_CONNECTED) {
+    if (now - lastTryWifi> 5000) {
+      WiFi.reconnect();
+      lastTryWifi = now;
+    }
+  }
+
+  if (!client.connected()) {
+    if (now - lastTryMQTT > 5000) {
+      setupMQTT();
+      lastTryMQTT = now;
+    }
+  }
+
+}
+
 void setup()
 {
 #ifdef DEBUG_ESP_PORT
@@ -749,6 +772,7 @@ void loop()
     ArduinoOTA.handle();
     reactToMusic();
     //lightshow();
+    connectionCheck();
   }
   else
   {

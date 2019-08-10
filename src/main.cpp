@@ -13,9 +13,9 @@
 #include <Protocol.h>
 
 // LED DEFINES
-#define FOREGROUND_NUM_LEDS 66
-#define BACKGROUND_NUM_LEDS 66
-#define NUM_LEDS FOREGROUND_NUM_LEDS + BACKGROUND_NUM_LEDS
+#define FOREGROUND_NUM_LEDS 74
+#define BACKGROUND_NUM_LEDS 74
+#define NUM_LEDS 148
 #define LED_PIN 12
 #define ONBOARDLED 2 // 1, 17, 21, 22 nicht.
 
@@ -739,6 +739,9 @@ void setup()
 
 void loop()
 {
+  static int comp = 0;
+  static long lastChange = 0;
+  long now = millis();
   blinkLed();
   if (wifiMode)
   {
@@ -746,7 +749,18 @@ void loop()
     client.loop();
     ArduinoOTA.handle();
     //reactToMusic();
-    lightshow();
+    //lightshow();
+    if (now - lastChange > 5000) {
+      comp++;
+      lastChange = now;
+    }
+    if (comp > 4) {
+      comp = 0;
+    }
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    pattern.fillCompartmentBack(CRGB::Blue, comp);
+    pattern.fillCompartmentFront(CRGB::Red, comp);
+    FastLED.show();
   }
   else
   {

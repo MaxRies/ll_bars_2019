@@ -193,12 +193,6 @@ public:
 	void saveValues();
 	void getValues();
 
-	void setGroup(int newGroup);
-	void setPosition(int newPosition);
-
-	void setMaxGroupNumber(int maxGroup);
-	void setMaxPositionNumber(int maxPosition);
-
 	const CRGB &getBaseColor() const
 	{
 		return baseColor;
@@ -529,7 +523,15 @@ public:
 		position = newPosition;
 	}
 
-	void setMaxGroupNumber(int)
+	void setMaxGroupNumber(int newMaxGroup)
+	{
+		maxGroup = newMaxGroup;
+	}
+
+	void setMaxPositionNumber(int newMaxPos)
+	{
+		maxPosition = newMaxPos;
+	}
 };
 
 #endif /* PATTERN_H_ */

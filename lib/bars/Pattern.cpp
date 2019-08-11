@@ -743,39 +743,51 @@ void Pattern::groupBallUp()
 	static int animationCounter = 0;
 	static int myCounter = 0;
 	static long lastStepTime = 0;
+	static long lastFadeTime = 0;
 
-	double timeForAnimation = 3000; // normalerweise um die 500
-	int groupLength = 3 * 5;
-	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
+	double timeForAnimation = 6000; // normalerweise um die 500
+	int groupLength = (this->maxPosition + 1) * 5;
+	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
 
 	int myPartStart = this->position * 5;
 	int myPartEnd = (this->position + 1) * 5;
 	if (animationActive)
 	{
+
 		if (millisSinceBeat == 0)
 		{
 			if (!animationRunning)
 			{
+				startTime = millis();
+				lastStepTime = startTime;
 				animationRunning = true;
 				animationCounter = 0;
 				myCounter = 0;
-				lastStepTime = millis();
-				fill_solid(leds, length, CRGB::Green);
+				leds[2] = CRGB::Green;
 				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
 			}
 		}
 
+		long now = millis();
+		if (now - startTime > timeForAnimation)
+		{
+			animationRunning = false;
+			return;
+		}
+
+		fadeToBlackBy(leds, length, 10);
+
 		if (animationRunning)
 		{
-			long now = millis();
 			if (now - lastStepTime > stepTime)
 			{
 				lastStepTime = now;
 				animationCounter++;
 				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
 				{
-					fill_solid(leds, length, CRGB::Black);
+
 					fillCompartmentBack(CRGB::Red, myCounter);
+
 					myCounter++;
 				}
 				else
@@ -785,7 +797,8 @@ void Pattern::groupBallUp()
 
 				if (animationCounter >= groupLength)
 				{
-					animationRunning = false;
+					animationCounter = 0;
+					myCounter = 0;
 					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
 				}
 				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
@@ -794,9 +807,9 @@ void Pattern::groupBallUp()
 	}
 	else
 	{
+		animationActive = false;
 		fill_solid(leds, length, CRGB::Black);
 		fillCompartmentBack(CRGB::Blue, this->position);
-		fillCompartmentBack(CRGB::Red, position);
 	}
 }
 

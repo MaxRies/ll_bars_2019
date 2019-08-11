@@ -110,7 +110,7 @@ void Pattern::baseRectDimm()
 }
 void Pattern::baseStatic()
 {
-	fill_solid(leds, length, dimByVal(baseColor, nbaseDim));
+	fill_solid(leds, length, dimByVal(baseColor, 120));
 }
 
 void Pattern::baseQuadDimmRand50()
@@ -907,7 +907,7 @@ void Pattern::patternChooser(int number)
 void Pattern::colorChooser(int number)
 {
 	/*
-		
+		@param number between 0 and 447
 	 */
 	if (number < 0)
 	{
@@ -926,6 +926,9 @@ void Pattern::colorChooser(int number)
 
 CRGB Pattern::dimByVal(CRGB &color, double Value)
 {
+	/* 
+		@param value between 0 and 255
+	*/
 	CRGB col;
 	col.r = Value / 255 * color.r;
 	col.g = Value / 255 * color.g;

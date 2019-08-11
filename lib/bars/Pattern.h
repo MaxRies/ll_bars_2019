@@ -39,6 +39,8 @@
 #define INPUT_MAX_VALUE 65280‬
 #define INPUT_MIN_VALUE 0
 
+#define BEATS_TO_SWITCH 4
+
 #ifdef DEBUG_ESP_PORT
 #define DEBUG_MSG(...) DEBUG_ESP_PORT.printf(__VA_ARGS__)
 #else
@@ -139,6 +141,11 @@ class Pattern
 	int maxGroup;
 	int maxPosition;
 
+	int currentActivePosition;
+	int currentActiveGroup;
+
+	int beatCounter;
+
 public:
 	Pattern(CRGB *leds, size_t length);
 	virtual ~Pattern();
@@ -192,6 +199,13 @@ public:
 	void colorChooser(int number);
 	void saveValues();
 	void getValues();
+
+	void newBeat();
+	void nextPosition();
+	void nextGroup();
+
+	void groupBallUp();
+	void groupBallDown();
 
 	const CRGB &getBaseColor() const
 	{

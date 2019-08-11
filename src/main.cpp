@@ -78,8 +78,6 @@ long millisSinceSync;
 long lastSync;
 long millisSinceBeat;
 long lastBeat;
-long millisSinceRequest;
-long lastRequest;
 long now;
 long lastSave;
 
@@ -701,7 +699,6 @@ void setTimes()
   now = millis();
   millisSinceSync = now - lastSync;
   millisSinceBeat = now - lastBeat;
-  millisSinceRequest = now - lastRequest;
   pattern.setMillisSinceBeat((double)millisSinceBeat);
   pattern.setStrobeTime(millis() - pattern.getStrobeStart());
 }
@@ -739,16 +736,15 @@ void reactToMusic()
   pattern.baseChoser();
   pattern.frontChoser();
   pattern.strobeChoser();
-  FastLED.setCorrection(TypicalSMD5050);
+  //FastLED.setCorrection(TypicalSMD5050);
   FastLED.show((uint8_t)pattern.getDimVal());
 }
 
 void lightshow()
 {
   setTimes();
-  long now = millis();
 
-  if (now - lastBeat > 500)
+  if (millisSinceBeat > 500)
   {
     pattern.setBeatPeriodMillis(500);
     pattern.setMillisSinceBeat(0);
@@ -760,7 +756,7 @@ void lightshow()
   pattern.baseChoser();
   pattern.frontChoser();
   pattern.strobeChoser();
-  FastLED.setCorrection(TypicalSMD5050);
+  //FastLED.setCorrection(TypicalSMD5050);
   FastLED.show((uint8_t)pattern.getDimVal());
 }
 
@@ -847,9 +843,9 @@ void loop()
     }
     else
     {
-      reactToMusic();
+      //reactToMusic();
     }
-    //lightshow();
+    lightshow();
     connectionCheck();
   }
   else

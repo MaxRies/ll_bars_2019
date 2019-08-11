@@ -730,9 +730,76 @@ void Pattern::setSettings()
 	strobeColor = colors(temp);
 }
 
+void Pattern::groupBallUp()
+{
+	/*
+	static long startTime;
+	static bool animationRunning = false;
+	static int animationCounter = 0;
+	static int myCounter = 0;
+	static long lastStepTime = 0;
+
+	maxPosition = 3;
+	position = 2;
+	beatPeriodMillis = 500;
+
+	double timeForAnimation = beatPeriodMillis; // normalerweise um die 500
+	int groupLength = (maxPosition + 1) * side_length;
+	double stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
+
+	int myPartStart = position * side_length;
+	int myPartEnd = (position + 1) * side_length;
+
+	if (millisSinceBeat == 0)
+	{
+		if (!animationRunning)
+		{
+			animationRunning = true;
+			animationCounter = 0;
+			myCounter = 0;
+			startTime = millis();
+			lastStepTime = startTime;
+			DEBUG_MSG("START GROUP ANIMATION");
+		}
+	}
+
+	if (animationRunning)
+	{
+		DEBUG_MSG("HERE1");
+		long now = millis();
+		if (now - lastStepTime > stepTime)
+		{
+			DEBUG_MSG("HERE2");
+			animationCounter++;
+			if ((animationCounter > myPartStart) && (animationCounter < myPartEnd))
+			{
+				DEBUG_MSG("HERE3");
+				frontleds[myCounter] = dimByVal(frontColor, nfrontDim);
+				myCounter++;
+				DEBUG_MSG("HERE4");
+			}
+			else
+			{
+			}
+			if (animationCounter > groupLength)
+			{
+				DEBUG_MSG("HERE5");
+				animationRunning = false;
+				DEBUG_MSG("END GROUP ANIMATION");
+			}
+			DEBUG_MSG("myCounter: %i \t animationCounter: %i", myCounter, animationCounter);
+		}
+		DEBUG_MSG("HERE6");
+		lastStepTime = now;
+	}
+	*/
+}
+
 void Pattern::frontChoser()
 {
-	int temp = (int)nfrontPattern;
+	//int temp = (int)nfrontPattern;
+	//groupBallUp();
+	/*
 	switch (temp)
 	{
 	case 1:
@@ -758,7 +825,7 @@ void Pattern::frontChoser()
 		break;
 	default:
 		break;
-	}
+	}*/
 }
 
 void Pattern::baseChoser()
@@ -981,5 +1048,34 @@ void Pattern::getValues()
 		nstrobeDim = retrieved.nStrobeDim;
 		nstrobeSpeed = retrieved.nStrobeSpeed;
 		DEBUG_MSG("FLASH VALUES RETRIEVED!");
+	}
+}
+
+void Pattern::nextPosition()
+{
+	currentActivePosition++;
+	if (currentActivePosition > maxPosition)
+	{
+		currentActivePosition = 0;
+	}
+}
+
+void Pattern::nextGroup()
+{
+	currentActiveGroup++;
+	if (currentActiveGroup > maxGroup)
+	{
+		currentActiveGroup = 0;
+	}
+}
+
+void Pattern::newBeat()
+{
+	beatCounter++;
+	nextPosition();
+	if (beatCounter >= BEATS_TO_SWITCH)
+	{
+		beatCounter = 0;
+		nextGroup();
 	}
 }

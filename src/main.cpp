@@ -363,6 +363,14 @@ void callback(char *topic, byte *payload, unsigned int length)
       DEBUG_MSG("Set mode to normal mode");
       flash(3, CRGB::Blue);
     }
+    else if (strstr(value, "reset") != NULL)
+    {
+      configMode = false;
+      DEBUG_MSG("Reset group and position");
+      group = 0;
+      position = 0;
+      flash(3, CRGB::HotPink);
+    }
   }
   else if (strstr(topic, "Pattern") != NULL)
   {

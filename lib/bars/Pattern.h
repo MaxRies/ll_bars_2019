@@ -134,6 +134,11 @@ class Pattern
 
 	valsToSave saveVals;
 
+	int group;
+	int position;
+	int maxGroup;
+	int maxPosition;
+
 public:
 	Pattern(CRGB *leds, size_t length);
 	virtual ~Pattern();
@@ -188,8 +193,8 @@ public:
 	void saveValues();
 	void getValues();
 
-	void setGroup(int group);
-	void setPosition(int position);
+	void setGroup(int newGroup);
+	void setPosition(int newPosition);
 
 	void setMaxGroupNumber(int maxGroup);
 	void setMaxPositionNumber(int maxPosition);
@@ -513,6 +518,18 @@ public:
 	{
 		strobe_time = strobeTime;
 	}
+
+	void setGroup(int newGroup)
+	{
+		group = newGroup;
+	}
+
+	void setPosition(int newPosition)
+	{
+		position = newPosition;
+	}
+
+	void setMaxGroupNumber(int)
 };
 
 #endif /* PATTERN_H_ */

@@ -248,7 +248,7 @@ void setupLEDs()
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
   flash(3, CRGB::Red);
-  pattern.getValues();
+  //pattern.getValues();
 }
 
 void setupBeatListener()
@@ -338,7 +338,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
   DEBUG_MSG("topic: %s \n", topic);
   DEBUG_MSG("message: %s \n", (char *)payload);
-  if (strstr(topic, "groups") != NULL)
+  if (strstr(topic, "LLBars/groups") != NULL)
   {
     if (strstr(topic, "maxPos") != NULL)
     {

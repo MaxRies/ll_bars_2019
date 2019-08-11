@@ -37,6 +37,8 @@ Pattern::Pattern(CRGB *leds, size_t length)
 	position = 0;
 	maxGroup = 0;
 	maxPosition = 0;
+
+	animationActive = false;
 }
 
 Pattern::~Pattern()
@@ -742,48 +744,59 @@ void Pattern::groupBallUp()
 	static int myCounter = 0;
 	static long lastStepTime = 0;
 
-	double timeForAnimation = beatPeriodMillis; // normalerweise um die 500
-	int groupLength = (maxPosition + 1) * side_length;
-	double stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
+	double timeForAnimation = 3000; // normalerweise um die 500
+	int groupLength = 3 * 5;
+	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
 
-	int myPartStart = position * side_length;
-	int myPartEnd = (position + 1) * side_length;
-
-	if (millisSinceBeat == 0)
+	int myPartStart = this->position * 5;
+	int myPartEnd = (this->position + 1) * 5;
+	if (animationActive)
 	{
-		if (!animationRunning)
+		if (millisSinceBeat == 0)
 		{
-			animationRunning = true;
-			animationCounter = 0;
-			myCounter = 0;
-			startTime = millis();
-			lastStepTime = startTime;
-			DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
+			if (!animationRunning)
+			{
+				animationRunning = true;
+				animationCounter = 0;
+				myCounter = 0;
+				lastStepTime = millis();
+				fill_solid(leds, length, CRGB::Green);
+				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
+			}
+		}
+
+		if (animationRunning)
+		{
+			long now = millis();
+			if (now - lastStepTime > stepTime)
+			{
+				lastStepTime = now;
+				animationCounter++;
+				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
+				{
+					fill_solid(leds, length, CRGB::Black);
+					fillCompartmentBack(CRGB::Red, myCounter);
+					myCounter++;
+				}
+				else
+				{
+					fill_solid(leds, length, CRGB::Black);
+				}
+
+				if (animationCounter >= groupLength)
+				{
+					animationRunning = false;
+					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
+				}
+				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
+			}
 		}
 	}
-
-	if (animationRunning)
+	else
 	{
-		long now = millis();
-		if (now - lastStepTime > stepTime)
-		{
-			animationCounter++;
-			if ((animationCounter > myPartStart) && (animationCounter < myPartEnd))
-			{
-				frontleds[myCounter] = dimByVal(frontColor, nfrontDim);
-				myCounter++;
-			}
-			else
-			{
-			}
-			if (animationCounter > groupLength)
-			{
-				animationRunning = false;
-				DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
-			}
-			DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
-		}
-		lastStepTime = now;
+		fill_solid(leds, length, CRGB::Black);
+		fillCompartmentBack(CRGB::Blue, this->position);
+		fillCompartmentBack(CRGB::Red, position);
 	}
 }
 

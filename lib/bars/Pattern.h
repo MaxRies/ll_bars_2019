@@ -150,6 +150,8 @@ public:
 	Pattern(CRGB *leds, size_t length);
 	virtual ~Pattern();
 
+	bool animationActive;
+
 	//helper
 	double linearApp(double amp1, double amp2, double deltax, double x);
 	double quadApp(double amp1, double amp2, double deltax, double x);
@@ -529,22 +531,22 @@ public:
 
 	void setGroup(int newGroup)
 	{
-		group = newGroup;
+		this->group = newGroup;
 	}
 
 	void setPosition(int newPosition)
 	{
-		position = newPosition;
+		this->position = newPosition;
 	}
 
 	void setMaxGroupNumber(int newMaxGroup)
 	{
-		maxGroup = newMaxGroup;
+		this->maxGroup = newMaxGroup;
 	}
 
 	void setMaxPositionNumber(int newMaxPos)
 	{
-		maxPosition = newMaxPos;
+		this->maxPosition = newMaxPos;
 	}
 };
 

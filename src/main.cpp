@@ -373,7 +373,8 @@ void callback(char *topic, byte *payload, unsigned int length)
       // Always accept group or position number!
       char value[20];
       strncpy(value, (char *)payload, length);
-      position = atoi(value);
+      int newPosition = atoi(value);
+      setPosition(newPosition);
       DEBUG_MSG("Position Set: %u\n", position);
       flash(position + 1, CRGB::Tomato);
     }
@@ -514,6 +515,10 @@ void callback(char *topic, byte *payload, unsigned int length)
     sprintf(message, "showpattern: %i", number);
     DEBUG_MQTT(message);
   }
+  else if (strstr(topic, "activate") != NULL)
+  {
+    pattern.animationActive = !pattern.animationActive;
+  }
 }
 
 void setupMQTT()
@@ -598,6 +603,9 @@ void setupMQTT()
   client.subscribe("LLBars/showpattern");
   DEBUG_MSG("Subscribed to: LLBars/showpattern\n");
 
+  client.subscribe("activate");
+  DEBUG_MSG("Subscribed to: activate\n");
+
   client.subscribe("brain/mode");
   DEBUG_MSG("MQTT Setup DONE!");
 }
@@ -662,7 +670,12 @@ int checkButton()
       }
       else
       {
-        flash(3, CRGB::White);
+        fill_solid(leds, NUM_LEDS, CRGB::Black);
+        fill_solid(leds, position + 1, CRGB::Red);
+        fill_solid(leds + 10, group + 1, CRGB::Blue);
+        FastLED.show();
+        delay(2000);
+        //flash(3, CRGB::White);
       }
     }
     else
@@ -731,11 +744,12 @@ void reactToMusic()
       }
     }
   }
-  pattern.baseChoser();
+  //pattern.baseChoser();
   pattern.frontChoser();
-  pattern.strobeChoser();
+  //pattern.strobeChoser();
   //FastLED.setCorrection(TypicalSMD5050);
-  FastLED.show((uint8_t)pattern.getDimVal());
+  //FastLED.show((uint8_t)pattern.getDimVal());
+  FastLED.show();
 }
 
 void lightshow()
@@ -743,7 +757,7 @@ void lightshow()
 
   setTimes();
 
-  if (millisSinceBeat > 500)
+  if (millisSinceBeat > 2000)
   {
     pattern.setBeatPeriodMillis((double)500.0);
     pattern.setMillisSinceBeat((double)0.0);
@@ -752,11 +766,11 @@ void lightshow()
     DEBUG_MSG("FAKE BEAT\n");
   }
 
-  pattern.baseChoser();
+  //pattern.baseChoser();
 
   pattern.frontChoser();
 
-  pattern.strobeChoser();
+  //pattern.strobeChoser();
 
   FastLED.setCorrection(TypicalSMD5050);
   FastLED.show((uint8_t)pattern.getDimVal());
@@ -845,9 +859,9 @@ void loop()
     }
     else
     {
-      //reactToMusic();
+      reactToMusic();
     }
-    lightshow();
+    //lightshow();
     connectionCheck();
   }
   else

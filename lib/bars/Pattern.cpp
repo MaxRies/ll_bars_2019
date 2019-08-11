@@ -15,18 +15,22 @@ Pattern::Pattern(CRGB *leds, size_t length)
 	this->backleds = leds;
 	this->frontleds = leds + length / 2;
 	this->side_length = length / 2;
+
 	nbasePattern = 1;
 	nbaseColor = 1;
 	nbaseSpeed = 125;
 	nbaseDim = 225;
+
 	nfrontPattern = 1;
 	nfrontColor = 1;
-	nbaseSpeed = 125;
+	nfrontSpeed = 125;
 	nfrontDim = 120;
+
 	nstrobePattern = 1;
 	nstrobeColor = 1;
-	nbaseSpeed = 125;
-	nstrobeDim = 200;
+	nstrobeSpeed = 200;
+	nstrobeDim = 200.0;
+
 	dimVal = 255;
 	dutyCycle = 1;
 	group = 0;
@@ -732,16 +736,11 @@ void Pattern::setSettings()
 
 void Pattern::groupBallUp()
 {
-	/*
 	static long startTime;
 	static bool animationRunning = false;
 	static int animationCounter = 0;
 	static int myCounter = 0;
 	static long lastStepTime = 0;
-
-	maxPosition = 3;
-	position = 2;
-	beatPeriodMillis = 500;
 
 	double timeForAnimation = beatPeriodMillis; // normalerweise um die 500
 	int groupLength = (maxPosition + 1) * side_length;
@@ -759,46 +758,39 @@ void Pattern::groupBallUp()
 			myCounter = 0;
 			startTime = millis();
 			lastStepTime = startTime;
-			DEBUG_MSG("START GROUP ANIMATION");
+			DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
 		}
 	}
 
 	if (animationRunning)
 	{
-		DEBUG_MSG("HERE1");
 		long now = millis();
 		if (now - lastStepTime > stepTime)
 		{
-			DEBUG_MSG("HERE2");
 			animationCounter++;
 			if ((animationCounter > myPartStart) && (animationCounter < myPartEnd))
 			{
-				DEBUG_MSG("HERE3");
 				frontleds[myCounter] = dimByVal(frontColor, nfrontDim);
 				myCounter++;
-				DEBUG_MSG("HERE4");
 			}
 			else
 			{
 			}
 			if (animationCounter > groupLength)
 			{
-				DEBUG_MSG("HERE5");
 				animationRunning = false;
-				DEBUG_MSG("END GROUP ANIMATION");
+				DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
 			}
-			DEBUG_MSG("myCounter: %i \t animationCounter: %i", myCounter, animationCounter);
+			DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
 		}
-		DEBUG_MSG("HERE6");
 		lastStepTime = now;
 	}
-	*/
 }
 
 void Pattern::frontChoser()
 {
 	//int temp = (int)nfrontPattern;
-	//groupBallUp();
+	groupBallUp();
 	/*
 	switch (temp)
 	{

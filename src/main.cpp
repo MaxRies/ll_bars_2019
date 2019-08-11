@@ -260,8 +260,6 @@ void setupBeatListener()
   lastSync = 0;
   millisSinceBeat = 0;
   lastBeat = 0;
-  millisSinceRequest = 0;
-  lastRequest = 0;
   now = 0;
 }
 
@@ -742,21 +740,25 @@ void reactToMusic()
 
 void lightshow()
 {
+
   setTimes();
 
   if (millisSinceBeat > 500)
   {
-    pattern.setBeatPeriodMillis(500);
-    pattern.setMillisSinceBeat(0);
-    millisSinceBeat = 0;
+    pattern.setBeatPeriodMillis((double)500.0);
+    pattern.setMillisSinceBeat((double)0.0);
+    millisSinceBeat = 0.0;
     lastBeat = now;
-    DEBUG_MSG("FAKE BEAT \n");
+    DEBUG_MSG("FAKE BEAT\n");
   }
 
   pattern.baseChoser();
+
   pattern.frontChoser();
+
   pattern.strobeChoser();
-  //FastLED.setCorrection(TypicalSMD5050);
+
+  FastLED.setCorrection(TypicalSMD5050);
   FastLED.show((uint8_t)pattern.getDimVal());
 }
 

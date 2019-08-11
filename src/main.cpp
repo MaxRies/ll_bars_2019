@@ -149,7 +149,7 @@ void flashLoop(CRGB color)
 
 void flashOnboard(int n)
 {
-  for (size_t i = 0; i < n; i++)
+  for (int i = 0; i < n; i++)
   {
     digitalWrite(ONBOARDLED, LOW);
     delay(100);
@@ -168,7 +168,8 @@ void nextShow()
   pattern.patternChooser(noWifiShowPattern);
 }
 
-void nextShow(int show) {
+void selectShow(int show)
+{
   if (show > 167)
   {
     show = 167;
@@ -206,6 +207,13 @@ void toggleAutoShow()
     autoShowOn = true;
     flash(1, CRGB::Green);
   }
+}
+
+void DEBUG_MQTT(const char *message)
+{
+  char topic1[100];
+  sprintf(topic1, "LLBars/%s/debug", chipName);
+  client.publish(topic1, message);
 }
 
 /* SETUP FUNCTIONS */
@@ -258,10 +266,10 @@ void setupOTA()
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     int percent = progress / (total / 100);
-    int ID = (int) 74.0 * (percent / 100.0);
+    int ID = (int)74.0 * (percent / 100.0);
     if ((ID < NUM_LEDS) && (ID > 0))
     {
-      
+
       fill_solid(leds, NUM_LEDS, CRGB::Black);
       leds[ID] = CRGB::Green;
       FastLED.show();
@@ -319,11 +327,11 @@ void callback(char *topic, byte *payload, unsigned int length)
     if (strstr(topic, "set") != NULL)
     {
       // Always accept group or position number!
-        char value[20];
-        strncpy(value, (char *)payload, length);
-        group = atoi(value);
-        DEBUG_MSG("Group Set: %u\n", group);
-        flash(group, CRGB::Purple);
+      char value[20];
+      strncpy(value, (char *)payload, length);
+      group = atoi(value);
+      DEBUG_MSG("Group Set: %u\n", group);
+      flash(group + 1, CRGB::Purple);
     }
   }
   else if (strstr(topic, "position") != NULL)
@@ -331,11 +339,11 @@ void callback(char *topic, byte *payload, unsigned int length)
     if (strstr(topic, "set") != NULL)
     {
       // Always accept group or position number!
-        char value[20];
-        strncpy(value, (char *)payload, length);
-        position = atoi(value);
-        DEBUG_MSG("Position Set: %u\n", position);
-        flash(position, CRGB::Tomato);
+      char value[20];
+      strncpy(value, (char *)payload, length);
+      position = atoi(value);
+      DEBUG_MSG("Position Set: %u\n", position);
+      flash(position + 1, CRGB::Tomato);
     }
   }
   else if (strstr(topic, "mode") != NULL)
@@ -460,8 +468,11 @@ void callback(char *topic, byte *payload, unsigned int length)
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
     int number = map(rawNumber, 0, 65536, 0, 167);
-    nextShow(number);
+    selectShow(number);
     DEBUG_MSG("SET showpattern TO: %i \n", number);
+    char message[100];
+    sprintf(message, "showpattern: %i", number);
+    DEBUG_MQTT(message);
   }
 }
 
@@ -521,7 +532,7 @@ void setupMQTT()
   client.subscribe("LLBars/frontspeed");
   DEBUG_MSG("Subscribed to: LLBars/frontspeed\n");
 
-  client.subscribe("LLBars/basedim");  
+  client.subscribe("LLBars/basedim");
   DEBUG_MSG("Subscribed to: LLBars/basedim\n");
 
   client.subscribe("LLBars/frontdim");
@@ -591,14 +602,15 @@ int checkButton()
   {
     if (wifiMode)
     {
-      if (configMode) 
+      if (configMode)
       {
         DEBUG_MSG("publish shortpush");
         char topic[100];
         sprintf(topic, "LLBars/%s/button", chipName);
         client.publish(topic, "short");
       }
-      else {
+      else
+      {
         flash(3, CRGB::White);
       }
     }
@@ -612,7 +624,8 @@ int checkButton()
   {
     if (wifiMode)
     {
-      if (configMode) {
+      if (configMode)
+      {
         DEBUG_MSG("publish longpush");
         char topic[100];
         sprintf(topic, "LLBars/%s/button", chipName);
@@ -719,25 +732,28 @@ void blinkLed()
   }
 }
 
-void connectionCheck() {
+void connectionCheck()
+{
   static long lastTryWifi = 0;
   static long lastTryMQTT = 0;
-  static int mqttChecks = 0;
   long now = millis();
-  if (WiFi.status() != WL_CONNECTED) {
-    if (now - lastTryWifi> 5000) {
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (now - lastTryWifi > 15000)
+    {
       WiFi.reconnect();
       lastTryWifi = now;
     }
   }
 
-  if (!client.connected()) {
-    if (now - lastTryMQTT > 5000) {
+  if (!client.connected())
+  {
+    if (now - lastTryMQTT > 15000)
+    {
       setupMQTT();
       lastTryMQTT = now;
     }
   }
-
 }
 
 void setup()
@@ -770,7 +786,14 @@ void loop()
     checkButton();
     client.loop();
     ArduinoOTA.handle();
-    reactToMusic();
+    if (configMode)
+    {
+      flashLoop(CRGB::Gold);
+    }
+    else
+    {
+      reactToMusic();
+    }
     //lightshow();
     connectionCheck();
   }

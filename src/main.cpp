@@ -1,4 +1,4 @@
-#define VERSION 10
+#define VERSION 11
 
 #include <Arduino.h>
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -216,6 +216,22 @@ void DEBUG_MQTT(const char *message)
   client.publish(topic1, message);
 }
 
+void setGroup(int newGroup)
+{
+  char topic0[50];
+  sprintf(topic0, "LLBars/groups/%i/maxPos", group);
+  client.unsubscribe(topic0);
+
+  pattern.setGroup(newGroup);
+  sprintf(topic0, "LLBars/groups/%i/maxPos", newGroup);
+  client.subscribe(topic0);
+}
+
+void setPosition(int newPosition)
+{
+  pattern.setPosition(newPosition);
+}
+
 /* SETUP FUNCTIONS */
 void setupChip()
 {
@@ -322,15 +338,35 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
   DEBUG_MSG("topic: %s \n", topic);
   DEBUG_MSG("message: %s \n", (char *)payload);
-  if (strstr(topic, "group") != NULL)
+  if (strstr(topic, "groups") != NULL)
+  {
+    if (strstr(topic, "maxPos") != NULL)
+    {
+      char value[20];
+      strncpy(value, (char *)payload, length);
+      int maxPos = atoi(value);
+      pattern.setMaxPositionNumber(maxPos);
+      DEBUG_MSG("MaxPos Set: %i\n", group);
+    }
+    else if (strstr(topic, "maxGroups") != NULL)
+    {
+      char value[20];
+      strncpy(value, (char *)payload, length);
+      int maxGroup = atoi(value);
+      pattern.setMaxGroupNumber(maxGroup);
+      DEBUG_MSG("MaxGroup Set: %i\n", maxGroup);
+    }
+  }
+  else if (strstr(topic, "group") != NULL)
   {
     if (strstr(topic, "set") != NULL)
     {
       // Always accept group or position number!
       char value[20];
       strncpy(value, (char *)payload, length);
-      group = atoi(value);
-      DEBUG_MSG("Group Set: %u\n", group);
+      int newGroup = atoi(value);
+      setGroup(newGroup);
+      DEBUG_MSG("Group Set: %u\n", newGroup);
       flash(group + 1, CRGB::Purple);
     }
   }
@@ -521,6 +557,17 @@ void setupMQTT()
   client.subscribe(topic2);
   DEBUG_MSG("Subscribed to:");
   DEBUG_MSG(topic2);
+
+  char topic3[100];
+  sprintf(topic3, "LLBars/groups/%i/maxPos", group);
+  client.subscribe(topic3);
+  DEBUG_MSG("Subscribed to:");
+  DEBUG_MSG(topic3);
+
+  sprintf(topic3, "LLBars/groups/maxGroups", group);
+  client.subscribe(topic3);
+  DEBUG_MSG("Subscribed to:");
+  DEBUG_MSG(topic3);
 
   client.subscribe("LLBars/Dimm");
   DEBUG_MSG("Subscribed to: LLBars/Dimm\n");

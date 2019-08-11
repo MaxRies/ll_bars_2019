@@ -46,20 +46,22 @@
 #endif
 
 #define BALL_COUNT 10
-struct ball{
+struct ball
+{
 	uint8_t pos;
 	CRGB color;
 	bool active;
 
-	ball(){
+	ball()
+	{
 		pos = 0;
 		color = CRGB::Black;
 		active = false;
 	}
-
 };
 
-struct valsToSave {
+struct valsToSave
+{
 	double nBaseDim;
 	double nBaseSpeed;
 	double nFrontDim;
@@ -70,14 +72,12 @@ struct valsToSave {
 	bool pristine1;
 };
 
-
-
-class Pattern {
+class Pattern
+{
 
 	double millisSinceBeat;
 	double beatPeriodMillis;
 	double beatDistinctiveness;
-
 
 	double nbasePattern;
 	double nbaseColor;
@@ -94,11 +94,9 @@ class Pattern {
 	double dimVal;
 	double dutyCycle;
 
-
 	uint8_t strobeStep;
 	double lastcycle;
 	double color;
-
 
 	bool first;
 	bool onRand;
@@ -113,7 +111,6 @@ class Pattern {
 	uint8_t strobe_comp;
 	uint32_t strobecounter;
 
-
 	size_t length;
 	size_t side_length;
 
@@ -121,33 +118,31 @@ class Pattern {
 	CRGB frontColor;
 	CRGB strobeColor;
 
-	CRGB* leds;
+	CRGB *leds;
 
-	CRGB* backleds;
-	CRGB* frontleds;
+	CRGB *backleds;
+	CRGB *frontleds;
 
-	CRGB* combartmentback1;
-	CRGB* combartmentback2;
-	CRGB* combartmentback3;
-	CRGB* combartmentback4;
-	CRGB* compartmentback5;
+	CRGB *combartmentback1;
+	CRGB *combartmentback2;
+	CRGB *combartmentback3;
+	CRGB *combartmentback4;
+	CRGB *compartmentback5;
 
-	const int patternCombinations [168][3] = {{0, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0}, {4, 0, 0}, {5, 0, 0}, {0, 1, 0}, {1, 1, 0}, {2, 1, 0}, {3, 1, 0}, {4, 1, 0}, {5, 1, 0}, {0, 2, 0}, {1, 2, 0}, {2, 2, 0}, {3, 2, 0}, {4, 2, 0}, {5, 2, 0}, {0, 3, 0}, {1, 3, 0}, {2, 3, 0}, {3, 3, 0}, {4, 3, 0}, {5, 3, 0}, {0, 4, 0}, {1, 4, 0}, {2, 4, 0}, {3, 4, 0}, {4, 4, 0}, {5, 4, 0}, {0, 5, 0}, {1, 5, 0}, {2, 5, 0}, {3, 5, 0}, {4, 5, 0}, {5, 5, 0}, {0, 6, 0}, {1, 6, 0}, {2, 6, 0}, {3, 6, 0}, {4, 6, 0}, {5, 6, 0}, {0, 0, 1}, {1, 0, 1}, {2, 0, 1}, {3, 0, 1}, {4, 0, 1}, {5, 0, 1}, {0, 1, 1}, {1, 1, 1}, {2, 1, 1}, {3, 1, 1}, {4, 1, 1}, {5, 1, 1}, {0, 2, 1}, {1, 2, 1}, {2, 2, 1}, {3, 2, 1}, {4, 2, 1}, {5, 2, 1}, {0, 3, 1}, {1, 3, 1}, {2, 3, 1}, {3, 3, 1}, {4, 3, 1}, {5, 3, 1}, {0, 4, 1}, {1, 4, 1}, {2, 4, 1}, {3, 4, 1}, {4, 4, 1}, {5, 4, 1}, {0, 5, 1}, {1, 5, 1}, {2, 5, 1}, {3, 5, 1}, {4, 5, 1}, {5, 5, 1}, {0, 6, 1}, {1, 6, 1}, {2, 6, 1}, {3, 6, 1}, {4, 6, 1}, {5, 6, 1}, {0, 0, 2}, {1, 0, 2}, {2, 0, 2}, {3, 0, 2}, {4, 0, 2}, {5, 0, 2}, {0, 1, 2}, {1, 1, 2}, {2, 1, 2}, {3, 1, 2}, {4, 1, 2}, {5, 1, 2}, {0, 2, 2}, {1, 2, 2}, {2, 2, 2}, {3, 2, 2}, {4, 2, 2}, {5, 2, 2}, {0, 3, 2}, {1, 3, 2}, {2, 3, 2}, {3, 3, 2}, {4, 3, 2}, {5, 3, 2}, {0, 4, 2}, {1, 4, 2}, {2, 4, 2}, {3, 4, 2}, {4, 4, 2}, {5, 4, 2}, {0, 5, 2}, {1, 5, 2}, {2, 5, 2}, {3, 5, 2}, {4, 5, 2}, {5, 5, 2}, {0, 6, 2}, {1, 6, 2}, {2, 6, 2}, {3, 6, 2}, {4, 6, 2}, {5, 6, 2}, {0, 0, 3}, {1, 0, 3}, {2, 0, 3}, {3, 0, 3}, {4, 0, 3}, {5, 0, 3}, {0, 1, 3}, {1, 1, 3}, {2, 1, 3}, {3, 1, 3}, {4, 1, 3}, {5, 1, 3}, {0, 2, 3}, {1, 2, 3}, {2, 2, 3}, {3, 2, 3}, {4, 2, 3}, {5, 2, 3}, {0, 3, 3}, {1, 3, 3}, {2, 3, 3}, {3, 3, 3}, {4, 3, 3}, {5, 3, 3}, {0, 4, 3}, {1, 4, 3}, {2, 4, 3}, {3, 4, 3}, {4, 4, 3}, {5, 4, 3}, {0, 5, 3}, {1, 5, 3}, {2, 5, 3}, {3, 5, 3}, {4, 5, 3}, {5, 5, 3}, {0, 6, 3}, {1, 6, 3}, {2, 6, 3}, {3, 6, 3}, {4, 6, 3}, {5, 6, 3}};
-	const int colorCombinations [448][3] = {{1, 2, 1}, {1, 2, 2}, {1, 2, 3}, {1, 2, 4}, {1, 2, 5}, {1, 2, 6}, {1, 2, 7}, {1, 2, 8}, {1, 3, 1}, {1, 3, 2}, {1, 3, 3}, {1, 3, 4}, {1, 3, 5}, {1, 3, 6}, {1, 3, 7}, {1, 3, 8}, {1, 4, 1}, {1, 4, 2}, {1, 4, 3}, {1, 4, 4}, {1, 4, 5}, {1, 4, 6}, {1, 4, 7}, {1, 4, 8}, {1, 5, 1}, {1, 5, 2}, {1, 5, 3}, {1, 5, 4}, {1, 5, 5}, {1, 5, 6}, {1, 5, 7}, {1, 5, 8}, {1, 6, 1}, {1, 6, 2}, {1, 6, 3}, {1, 6, 4}, {1, 6, 5}, {1, 6, 6}, {1, 6, 7}, {1, 6, 8}, {1, 7, 1}, {1, 7, 2}, {1, 7, 3}, {1, 7, 4}, {1, 7, 5}, {1, 7, 6}, {1, 7, 7}, {1, 7, 8}, {1, 8, 1}, {1, 8, 2}, {1, 8, 3}, {1, 8, 4}, {1, 8, 5}, {1, 8, 6}, {1, 8, 7}, {1, 8, 8}, {2, 1, 1}, {2, 1, 2}, {2, 1, 3}, {2, 1, 4}, {2, 1, 5}, {2, 1, 6}, {2, 1, 7}, {2, 1, 8}, {2, 3, 1}, {2, 3, 2}, {2, 3, 3}, {2, 3, 4}, {2, 3, 5}, {2, 3, 6}, {2, 3, 7}, {2, 3, 8}, {2, 4, 1}, {2, 4, 2}, {2, 4, 3}, {2, 4, 4}, {2, 4, 5}, {2, 4, 6}, {2, 4, 7}, {2, 4, 8}, {2, 5, 1}, {2, 5, 2}, {2, 5, 3}, {2, 5, 4}, {2, 5, 5}, {2, 5, 6}, {2, 5, 7}, {2, 5, 8}, {2, 6, 1}, {2, 6, 2}, {2, 6, 3}, {2, 6, 4}, {2, 6, 5}, {2, 6, 6}, {2, 6, 7}, {2, 6, 8}, {2, 7, 1}, {2, 7, 2}, {2, 7, 3}, {2, 7, 4}, {2, 7, 5}, {2, 7, 6}, {2, 7, 7}, {2, 7, 8}, {2, 8, 1}, {2, 8, 2}, {2, 8, 3}, {2, 8, 4}, {2, 8, 5}, {2, 8, 6}, {2, 8, 7}, {2, 8, 8}, {3, 1, 1}, {3, 1, 2}, {3, 1, 3}, {3, 1, 4}, {3, 1, 5}, {3, 1, 6}, {3, 1, 7}, {3, 1, 8}, {3, 2, 1}, {3, 2, 2}, {3, 2, 3}, {3, 2, 4}, {3, 2, 5}, {3, 2, 6}, {3, 2, 7}, {3, 2, 8}, {3, 4, 1}, {3, 4, 2}, {3, 4, 3}, {3, 4, 4}, {3, 4, 5}, {3, 4, 6}, {3, 4, 7}, {3, 4, 8}, {3, 5, 1}, {3, 5, 2}, {3, 5, 3}, {3, 5, 4}, {3, 5, 5}, {3, 5, 6}, {3, 5, 7}, {3, 5, 8}, {3, 6, 1}, {3, 6, 2}, {3, 6, 3}, {3, 6, 4}, {3, 6, 5}, {3, 6, 6}, {3, 6, 7}, {3, 6, 8}, {3, 7, 1}, {3, 7, 2}, {3, 7, 3}, {3, 7, 4}, {3, 7, 5}, {3, 7, 6}, {3, 7, 7}, {3, 7, 8}, {3, 8, 1}, {3, 8, 2}, {3, 8, 3}, {3, 8, 4}, {3, 8, 5}, {3, 8, 6}, {3, 8, 7}, {3, 8, 8}, {4, 1, 1}, {4, 1, 2}, {4, 1, 3}, {4, 1, 4}, {4, 1, 5}, {4, 1, 6}, {4, 1, 7}, {4, 1, 8}, {4, 2, 1}, {4, 2, 2}, {4, 2, 3}, {4, 2, 4}, {4, 2, 5}, {4, 2, 6}, {4, 2, 7}, {4, 2, 8}, {4, 3, 1}, {4, 3, 2}, {4, 3, 3}, {4, 3, 4}, {4, 3, 5}, {4, 3, 6}, {4, 3, 7}, {4, 3, 8}, {4, 5, 1}, {4, 5, 2}, {4, 5, 3}, {4, 5, 4}, {4, 5, 5}, {4, 5, 6}, {4, 5, 7}, {4, 5, 8}, {4, 6, 1}, {4, 6, 2}, {4, 6, 3}, {4, 6, 4}, {4, 6, 5}, {4, 6, 6}, {4, 6, 7}, {4, 6, 8}, {4, 7, 1}, {4, 7, 2}, {4, 7, 3}, {4, 7, 4}, {4, 7, 5}, {4, 7, 6}, {4, 7, 7}, {4, 7, 8}, {4, 8, 1}, {4, 8, 2}, {4, 8, 3}, {4, 8, 4}, {4, 8, 5}, {4, 8, 6}, {4, 8, 7}, {4, 8, 8}, {5, 1, 1}, {5, 1, 2}, {5, 1, 3}, {5, 1, 4}, {5, 1, 5}, {5, 1, 6}, {5, 1, 7}, {5, 1, 8}, {5, 2, 1}, {5, 2, 2}, {5, 2, 3}, {5, 2, 4}, {5, 2, 5}, {5, 2, 6}, {5, 2, 7}, {5, 2, 8}, {5, 3, 1}, {5, 3, 2}, {5, 3, 3}, {5, 3, 4}, {5, 3, 5}, {5, 3, 6}, {5, 3, 7}, {5, 3, 8}, {5, 4, 1}, {5, 4, 2}, {5, 4, 3}, {5, 4, 4}, {5, 4, 5}, {5, 4, 6}, {5, 4, 7}, {5, 4, 8}, {5, 6, 1}, {5, 6, 2}, {5, 6, 3}, {5, 6, 4}, {5, 6, 5}, {5, 6, 6}, {5, 6, 7}, {5, 6, 8}, {5, 7, 1}, {5, 7, 2}, {5, 7, 3}, {5, 7, 4}, {5, 7, 5}, {5, 7, 6}, {5, 7, 7}, {5, 7, 8}, {5, 8, 1}, {5, 8, 2}, {5, 8, 3}, {5, 8, 4}, {5, 8, 5}, {5, 8, 6}, {5, 8, 7}, {5, 8, 8}, {6, 1, 1}, {6, 1, 2}, {6, 1, 3}, {6, 1, 4}, {6, 1, 5}, {6, 1, 6}, {6, 1, 7}, {6, 1, 8}, {6, 2, 1}, {6, 2, 2}, {6, 2, 3}, {6, 2, 4}, {6, 2, 5}, {6, 2, 6}, {6, 2, 7}, {6, 2, 8}, {6, 3, 1}, {6, 3, 2}, {6, 3, 3}, {6, 3, 4}, {6, 3, 5}, {6, 3, 6}, {6, 3, 7}, {6, 3, 8}, {6, 4, 1}, {6, 4, 2}, {6, 4, 3}, {6, 4, 4}, {6, 4, 5}, {6, 4, 6}, {6, 4, 7}, {6, 4, 8}, {6, 5, 1}, {6, 5, 2}, {6, 5, 3}, {6, 5, 4}, {6, 5, 5}, {6, 5, 6}, {6, 5, 7}, {6, 5, 8}, {6, 7, 1}, {6, 7, 2}, {6, 7, 3}, {6, 7, 4}, {6, 7, 5}, {6, 7, 6}, {6, 7, 7}, {6, 7, 8}, {6, 8, 1}, {6, 8, 2}, {6, 8, 3}, {6, 8, 4}, {6, 8, 5}, {6, 8, 6}, {6, 8, 7}, {6, 8, 8}, {7, 1, 1}, {7, 1, 2}, {7, 1, 3}, {7, 1, 4}, {7, 1, 5}, {7, 1, 6}, {7, 1, 7}, {7, 1, 8}, {7, 2, 1}, {7, 2, 2}, {7, 2, 3}, {7, 2, 4}, {7, 2, 5}, {7, 2, 6}, {7, 2, 7}, {7, 2, 8}, {7, 3, 1}, {7, 3, 2}, {7, 3, 3}, {7, 3, 4}, {7, 3, 5}, {7, 3, 6}, {7, 3, 7}, {7, 3, 8}, {7, 4, 1}, {7, 4, 2}, {7, 4, 3}, {7, 4, 4}, {7, 4, 5}, {7, 4, 6}, {7, 4, 7}, {7, 4, 8}, {7, 5, 1}, {7, 5, 2}, {7, 5, 3}, {7, 5, 4}, {7, 5, 5}, {7, 5, 6}, {7, 5, 7}, {7, 5, 8}, {7, 6, 1}, {7, 6, 2}, {7, 6, 3}, {7, 6, 4}, {7, 6, 5}, {7, 6, 6}, {7, 6, 7}, {7, 6, 8}, {7, 8, 1}, {7, 8, 2}, {7, 8, 3}, {7, 8, 4}, {7, 8, 5}, {7, 8, 6}, {7, 8, 7}, {7, 8, 8}, {8, 1, 1}, {8, 1, 2}, {8, 1, 3}, {8, 1, 4}, {8, 1, 5}, {8, 1, 6}, {8, 1, 7}, {8, 1, 8}, {8, 2, 1}, {8, 2, 2}, {8, 2, 3}, {8, 2, 4}, {8, 2, 5}, {8, 2, 6}, {8, 2, 7}, {8, 2, 8}, {8, 3, 1}, {8, 3, 2}, {8, 3, 3}, {8, 3, 4}, {8, 3, 5}, {8, 3, 6}, {8, 3, 7}, {8, 3, 8}, {8, 4, 1}, {8, 4, 2}, {8, 4, 3}, {8, 4, 4}, {8, 4, 5}, {8, 4, 6}, {8, 4, 7}, {8, 4, 8}, {8, 5, 1}, {8, 5, 2}, {8, 5, 3}, {8, 5, 4}, {8, 5, 5}, {8, 5, 6}, {8, 5, 7}, {8, 5, 8}, {8, 6, 1}, {8, 6, 2}, {8, 6, 3}, {8, 6, 4}, {8, 6, 5}, {8, 6, 6}, {8, 6, 7}, {8, 6, 8}, {8, 7, 1}, {8, 7, 2}, {8, 7, 3}, {8, 7, 4}, {8, 7, 5}, {8, 7, 6}, {8, 7, 7}, {8, 7, 8}};
+	const int patternCombinations[168][3] = {{0, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0}, {4, 0, 0}, {5, 0, 0}, {0, 1, 0}, {1, 1, 0}, {2, 1, 0}, {3, 1, 0}, {4, 1, 0}, {5, 1, 0}, {0, 2, 0}, {1, 2, 0}, {2, 2, 0}, {3, 2, 0}, {4, 2, 0}, {5, 2, 0}, {0, 3, 0}, {1, 3, 0}, {2, 3, 0}, {3, 3, 0}, {4, 3, 0}, {5, 3, 0}, {0, 4, 0}, {1, 4, 0}, {2, 4, 0}, {3, 4, 0}, {4, 4, 0}, {5, 4, 0}, {0, 5, 0}, {1, 5, 0}, {2, 5, 0}, {3, 5, 0}, {4, 5, 0}, {5, 5, 0}, {0, 6, 0}, {1, 6, 0}, {2, 6, 0}, {3, 6, 0}, {4, 6, 0}, {5, 6, 0}, {0, 0, 1}, {1, 0, 1}, {2, 0, 1}, {3, 0, 1}, {4, 0, 1}, {5, 0, 1}, {0, 1, 1}, {1, 1, 1}, {2, 1, 1}, {3, 1, 1}, {4, 1, 1}, {5, 1, 1}, {0, 2, 1}, {1, 2, 1}, {2, 2, 1}, {3, 2, 1}, {4, 2, 1}, {5, 2, 1}, {0, 3, 1}, {1, 3, 1}, {2, 3, 1}, {3, 3, 1}, {4, 3, 1}, {5, 3, 1}, {0, 4, 1}, {1, 4, 1}, {2, 4, 1}, {3, 4, 1}, {4, 4, 1}, {5, 4, 1}, {0, 5, 1}, {1, 5, 1}, {2, 5, 1}, {3, 5, 1}, {4, 5, 1}, {5, 5, 1}, {0, 6, 1}, {1, 6, 1}, {2, 6, 1}, {3, 6, 1}, {4, 6, 1}, {5, 6, 1}, {0, 0, 2}, {1, 0, 2}, {2, 0, 2}, {3, 0, 2}, {4, 0, 2}, {5, 0, 2}, {0, 1, 2}, {1, 1, 2}, {2, 1, 2}, {3, 1, 2}, {4, 1, 2}, {5, 1, 2}, {0, 2, 2}, {1, 2, 2}, {2, 2, 2}, {3, 2, 2}, {4, 2, 2}, {5, 2, 2}, {0, 3, 2}, {1, 3, 2}, {2, 3, 2}, {3, 3, 2}, {4, 3, 2}, {5, 3, 2}, {0, 4, 2}, {1, 4, 2}, {2, 4, 2}, {3, 4, 2}, {4, 4, 2}, {5, 4, 2}, {0, 5, 2}, {1, 5, 2}, {2, 5, 2}, {3, 5, 2}, {4, 5, 2}, {5, 5, 2}, {0, 6, 2}, {1, 6, 2}, {2, 6, 2}, {3, 6, 2}, {4, 6, 2}, {5, 6, 2}, {0, 0, 3}, {1, 0, 3}, {2, 0, 3}, {3, 0, 3}, {4, 0, 3}, {5, 0, 3}, {0, 1, 3}, {1, 1, 3}, {2, 1, 3}, {3, 1, 3}, {4, 1, 3}, {5, 1, 3}, {0, 2, 3}, {1, 2, 3}, {2, 2, 3}, {3, 2, 3}, {4, 2, 3}, {5, 2, 3}, {0, 3, 3}, {1, 3, 3}, {2, 3, 3}, {3, 3, 3}, {4, 3, 3}, {5, 3, 3}, {0, 4, 3}, {1, 4, 3}, {2, 4, 3}, {3, 4, 3}, {4, 4, 3}, {5, 4, 3}, {0, 5, 3}, {1, 5, 3}, {2, 5, 3}, {3, 5, 3}, {4, 5, 3}, {5, 5, 3}, {0, 6, 3}, {1, 6, 3}, {2, 6, 3}, {3, 6, 3}, {4, 6, 3}, {5, 6, 3}};
+	const int colorCombinations[448][3] = {{1, 2, 1}, {1, 2, 2}, {1, 2, 3}, {1, 2, 4}, {1, 2, 5}, {1, 2, 6}, {1, 2, 7}, {1, 2, 8}, {1, 3, 1}, {1, 3, 2}, {1, 3, 3}, {1, 3, 4}, {1, 3, 5}, {1, 3, 6}, {1, 3, 7}, {1, 3, 8}, {1, 4, 1}, {1, 4, 2}, {1, 4, 3}, {1, 4, 4}, {1, 4, 5}, {1, 4, 6}, {1, 4, 7}, {1, 4, 8}, {1, 5, 1}, {1, 5, 2}, {1, 5, 3}, {1, 5, 4}, {1, 5, 5}, {1, 5, 6}, {1, 5, 7}, {1, 5, 8}, {1, 6, 1}, {1, 6, 2}, {1, 6, 3}, {1, 6, 4}, {1, 6, 5}, {1, 6, 6}, {1, 6, 7}, {1, 6, 8}, {1, 7, 1}, {1, 7, 2}, {1, 7, 3}, {1, 7, 4}, {1, 7, 5}, {1, 7, 6}, {1, 7, 7}, {1, 7, 8}, {1, 8, 1}, {1, 8, 2}, {1, 8, 3}, {1, 8, 4}, {1, 8, 5}, {1, 8, 6}, {1, 8, 7}, {1, 8, 8}, {2, 1, 1}, {2, 1, 2}, {2, 1, 3}, {2, 1, 4}, {2, 1, 5}, {2, 1, 6}, {2, 1, 7}, {2, 1, 8}, {2, 3, 1}, {2, 3, 2}, {2, 3, 3}, {2, 3, 4}, {2, 3, 5}, {2, 3, 6}, {2, 3, 7}, {2, 3, 8}, {2, 4, 1}, {2, 4, 2}, {2, 4, 3}, {2, 4, 4}, {2, 4, 5}, {2, 4, 6}, {2, 4, 7}, {2, 4, 8}, {2, 5, 1}, {2, 5, 2}, {2, 5, 3}, {2, 5, 4}, {2, 5, 5}, {2, 5, 6}, {2, 5, 7}, {2, 5, 8}, {2, 6, 1}, {2, 6, 2}, {2, 6, 3}, {2, 6, 4}, {2, 6, 5}, {2, 6, 6}, {2, 6, 7}, {2, 6, 8}, {2, 7, 1}, {2, 7, 2}, {2, 7, 3}, {2, 7, 4}, {2, 7, 5}, {2, 7, 6}, {2, 7, 7}, {2, 7, 8}, {2, 8, 1}, {2, 8, 2}, {2, 8, 3}, {2, 8, 4}, {2, 8, 5}, {2, 8, 6}, {2, 8, 7}, {2, 8, 8}, {3, 1, 1}, {3, 1, 2}, {3, 1, 3}, {3, 1, 4}, {3, 1, 5}, {3, 1, 6}, {3, 1, 7}, {3, 1, 8}, {3, 2, 1}, {3, 2, 2}, {3, 2, 3}, {3, 2, 4}, {3, 2, 5}, {3, 2, 6}, {3, 2, 7}, {3, 2, 8}, {3, 4, 1}, {3, 4, 2}, {3, 4, 3}, {3, 4, 4}, {3, 4, 5}, {3, 4, 6}, {3, 4, 7}, {3, 4, 8}, {3, 5, 1}, {3, 5, 2}, {3, 5, 3}, {3, 5, 4}, {3, 5, 5}, {3, 5, 6}, {3, 5, 7}, {3, 5, 8}, {3, 6, 1}, {3, 6, 2}, {3, 6, 3}, {3, 6, 4}, {3, 6, 5}, {3, 6, 6}, {3, 6, 7}, {3, 6, 8}, {3, 7, 1}, {3, 7, 2}, {3, 7, 3}, {3, 7, 4}, {3, 7, 5}, {3, 7, 6}, {3, 7, 7}, {3, 7, 8}, {3, 8, 1}, {3, 8, 2}, {3, 8, 3}, {3, 8, 4}, {3, 8, 5}, {3, 8, 6}, {3, 8, 7}, {3, 8, 8}, {4, 1, 1}, {4, 1, 2}, {4, 1, 3}, {4, 1, 4}, {4, 1, 5}, {4, 1, 6}, {4, 1, 7}, {4, 1, 8}, {4, 2, 1}, {4, 2, 2}, {4, 2, 3}, {4, 2, 4}, {4, 2, 5}, {4, 2, 6}, {4, 2, 7}, {4, 2, 8}, {4, 3, 1}, {4, 3, 2}, {4, 3, 3}, {4, 3, 4}, {4, 3, 5}, {4, 3, 6}, {4, 3, 7}, {4, 3, 8}, {4, 5, 1}, {4, 5, 2}, {4, 5, 3}, {4, 5, 4}, {4, 5, 5}, {4, 5, 6}, {4, 5, 7}, {4, 5, 8}, {4, 6, 1}, {4, 6, 2}, {4, 6, 3}, {4, 6, 4}, {4, 6, 5}, {4, 6, 6}, {4, 6, 7}, {4, 6, 8}, {4, 7, 1}, {4, 7, 2}, {4, 7, 3}, {4, 7, 4}, {4, 7, 5}, {4, 7, 6}, {4, 7, 7}, {4, 7, 8}, {4, 8, 1}, {4, 8, 2}, {4, 8, 3}, {4, 8, 4}, {4, 8, 5}, {4, 8, 6}, {4, 8, 7}, {4, 8, 8}, {5, 1, 1}, {5, 1, 2}, {5, 1, 3}, {5, 1, 4}, {5, 1, 5}, {5, 1, 6}, {5, 1, 7}, {5, 1, 8}, {5, 2, 1}, {5, 2, 2}, {5, 2, 3}, {5, 2, 4}, {5, 2, 5}, {5, 2, 6}, {5, 2, 7}, {5, 2, 8}, {5, 3, 1}, {5, 3, 2}, {5, 3, 3}, {5, 3, 4}, {5, 3, 5}, {5, 3, 6}, {5, 3, 7}, {5, 3, 8}, {5, 4, 1}, {5, 4, 2}, {5, 4, 3}, {5, 4, 4}, {5, 4, 5}, {5, 4, 6}, {5, 4, 7}, {5, 4, 8}, {5, 6, 1}, {5, 6, 2}, {5, 6, 3}, {5, 6, 4}, {5, 6, 5}, {5, 6, 6}, {5, 6, 7}, {5, 6, 8}, {5, 7, 1}, {5, 7, 2}, {5, 7, 3}, {5, 7, 4}, {5, 7, 5}, {5, 7, 6}, {5, 7, 7}, {5, 7, 8}, {5, 8, 1}, {5, 8, 2}, {5, 8, 3}, {5, 8, 4}, {5, 8, 5}, {5, 8, 6}, {5, 8, 7}, {5, 8, 8}, {6, 1, 1}, {6, 1, 2}, {6, 1, 3}, {6, 1, 4}, {6, 1, 5}, {6, 1, 6}, {6, 1, 7}, {6, 1, 8}, {6, 2, 1}, {6, 2, 2}, {6, 2, 3}, {6, 2, 4}, {6, 2, 5}, {6, 2, 6}, {6, 2, 7}, {6, 2, 8}, {6, 3, 1}, {6, 3, 2}, {6, 3, 3}, {6, 3, 4}, {6, 3, 5}, {6, 3, 6}, {6, 3, 7}, {6, 3, 8}, {6, 4, 1}, {6, 4, 2}, {6, 4, 3}, {6, 4, 4}, {6, 4, 5}, {6, 4, 6}, {6, 4, 7}, {6, 4, 8}, {6, 5, 1}, {6, 5, 2}, {6, 5, 3}, {6, 5, 4}, {6, 5, 5}, {6, 5, 6}, {6, 5, 7}, {6, 5, 8}, {6, 7, 1}, {6, 7, 2}, {6, 7, 3}, {6, 7, 4}, {6, 7, 5}, {6, 7, 6}, {6, 7, 7}, {6, 7, 8}, {6, 8, 1}, {6, 8, 2}, {6, 8, 3}, {6, 8, 4}, {6, 8, 5}, {6, 8, 6}, {6, 8, 7}, {6, 8, 8}, {7, 1, 1}, {7, 1, 2}, {7, 1, 3}, {7, 1, 4}, {7, 1, 5}, {7, 1, 6}, {7, 1, 7}, {7, 1, 8}, {7, 2, 1}, {7, 2, 2}, {7, 2, 3}, {7, 2, 4}, {7, 2, 5}, {7, 2, 6}, {7, 2, 7}, {7, 2, 8}, {7, 3, 1}, {7, 3, 2}, {7, 3, 3}, {7, 3, 4}, {7, 3, 5}, {7, 3, 6}, {7, 3, 7}, {7, 3, 8}, {7, 4, 1}, {7, 4, 2}, {7, 4, 3}, {7, 4, 4}, {7, 4, 5}, {7, 4, 6}, {7, 4, 7}, {7, 4, 8}, {7, 5, 1}, {7, 5, 2}, {7, 5, 3}, {7, 5, 4}, {7, 5, 5}, {7, 5, 6}, {7, 5, 7}, {7, 5, 8}, {7, 6, 1}, {7, 6, 2}, {7, 6, 3}, {7, 6, 4}, {7, 6, 5}, {7, 6, 6}, {7, 6, 7}, {7, 6, 8}, {7, 8, 1}, {7, 8, 2}, {7, 8, 3}, {7, 8, 4}, {7, 8, 5}, {7, 8, 6}, {7, 8, 7}, {7, 8, 8}, {8, 1, 1}, {8, 1, 2}, {8, 1, 3}, {8, 1, 4}, {8, 1, 5}, {8, 1, 6}, {8, 1, 7}, {8, 1, 8}, {8, 2, 1}, {8, 2, 2}, {8, 2, 3}, {8, 2, 4}, {8, 2, 5}, {8, 2, 6}, {8, 2, 7}, {8, 2, 8}, {8, 3, 1}, {8, 3, 2}, {8, 3, 3}, {8, 3, 4}, {8, 3, 5}, {8, 3, 6}, {8, 3, 7}, {8, 3, 8}, {8, 4, 1}, {8, 4, 2}, {8, 4, 3}, {8, 4, 4}, {8, 4, 5}, {8, 4, 6}, {8, 4, 7}, {8, 4, 8}, {8, 5, 1}, {8, 5, 2}, {8, 5, 3}, {8, 5, 4}, {8, 5, 5}, {8, 5, 6}, {8, 5, 7}, {8, 5, 8}, {8, 6, 1}, {8, 6, 2}, {8, 6, 3}, {8, 6, 4}, {8, 6, 5}, {8, 6, 6}, {8, 6, 7}, {8, 6, 8}, {8, 7, 1}, {8, 7, 2}, {8, 7, 3}, {8, 7, 4}, {8, 7, 5}, {8, 7, 6}, {8, 7, 7}, {8, 7, 8}};
 
 	valsToSave saveVals;
 
 public:
-
-	Pattern(CRGB* leds, size_t length);
+	Pattern(CRGB *leds, size_t length);
 	virtual ~Pattern();
-
 
 	//helper
 	double linearApp(double amp1, double amp2, double deltax, double x);
 	double quadApp(double amp1, double amp2, double deltax, double x);
 	CRGB colors(int color);
-	CRGB dimByVal(CRGB& color, double Value);
+	CRGB dimByVal(CRGB &color, double Value);
 
 	void fillCompartmentBack(CRGB color, int num);
 	void fillCompartmentFront(CRGB color, int num);
@@ -193,260 +188,329 @@ public:
 	void saveValues();
 	void getValues();
 
-	const CRGB& getBaseColor() const {
+	void setGroup(int group);
+	void setPosition(int position);
+
+	void setMaxGroupNumber(int maxGroup);
+	void setMaxPositionNumber(int maxPosition);
+
+	const CRGB &getBaseColor() const
+	{
 		return baseColor;
 	}
 
-	void setBaseColor(const CRGB& baseColor) {
+	void setBaseColor(const CRGB &baseColor)
+	{
 		this->baseColor = baseColor;
 	}
 
-	double getBeatDistinctiveness() const {
+	double getBeatDistinctiveness() const
+	{
 		return beatDistinctiveness;
 	}
 
-	void setBeatDistinctiveness(double beatDistinctiveness) {
+	void setBeatDistinctiveness(double beatDistinctiveness)
+	{
 		this->beatDistinctiveness = beatDistinctiveness;
 	}
 
-	double getBeatPeriodMillis() const {
+	double getBeatPeriodMillis() const
+	{
 		return beatPeriodMillis;
 	}
 
-	void setBeatPeriodMillis(double beatPeriodMillis) {
+	void setBeatPeriodMillis(double beatPeriodMillis)
+	{
 		this->beatPeriodMillis = beatPeriodMillis;
 	}
 
-	double getColor() const {
+	double getColor() const
+	{
 		return color;
 	}
 
-	void setColor(double color) {
+	void setColor(double color)
+	{
 		this->color = color;
 	}
 
-	double getDimVal() const {
+	double getDimVal() const
+	{
 		return dimVal;
 	}
 
-	void setDimVal(double dimVal) {
+	void setDimVal(double dimVal)
+	{
 		this->dimVal = dimVal;
 	}
 
-	double getDutyCycle() const {
+	double getDutyCycle() const
+	{
 		return dutyCycle;
 	}
 
-	void setDutyCycle(double dutyCycle) {
+	void setDutyCycle(double dutyCycle)
+	{
 		this->dutyCycle = dutyCycle;
 	}
 
-	const CRGB& getFrontColor() const {
+	const CRGB &getFrontColor() const
+	{
 		return frontColor;
 	}
 
-	void setFrontColor(const CRGB& frontColor) {
+	void setFrontColor(const CRGB &frontColor)
+	{
 		this->frontColor = frontColor;
 	}
 
-	size_t getLength() const {
+	size_t getLength() const
+	{
 		return length;
 	}
 
-	void setLength(size_t length) {
+	void setLength(size_t length)
+	{
 		this->length = length;
 	}
 
-	double getMillisSinceBeat() const {
+	double getMillisSinceBeat() const
+	{
 		return millisSinceBeat;
 	}
 
-	void setMillisSinceBeat(double millisSinceBeat) {
+	void setMillisSinceBeat(double millisSinceBeat)
+	{
 		this->millisSinceBeat = millisSinceBeat;
 	}
 
-	const CRGB& getStrobeColor() const {
+	const CRGB &getStrobeColor() const
+	{
 		return strobeColor;
 	}
 
-	double getNbaseColor() const {
+	double getNbaseColor() const
+	{
 		return nbaseColor;
 	}
 
-	void setNbaseColor(double nbaseColor) {
+	void setNbaseColor(double nbaseColor)
+	{
 		this->nbaseColor = nbaseColor;
 	}
 
-	double getNbasePattern() const {
+	double getNbasePattern() const
+	{
 		return nbasePattern;
 	}
 
-	void setNbasePattern(double nbasePattern) {
+	void setNbasePattern(double nbasePattern)
+	{
 		this->nbasePattern = nbasePattern;
 	}
 
-	double getNfrontColor() const {
+	double getNfrontColor() const
+	{
 		return nfrontColor;
 	}
 
-	void setNfrontColor(double nfrontColor) {
+	void setNfrontColor(double nfrontColor)
+	{
 		this->nfrontColor = nfrontColor;
 	}
 
-	double getNfrontPattern() const {
+	double getNfrontPattern() const
+	{
 		return nfrontPattern;
 	}
 
-	void setNfrontPattern(double nfrontPattern) {
-		this->nfrontPattern = nfrontPattern;	
+	void setNfrontPattern(double nfrontPattern)
+	{
+		this->nfrontPattern = nfrontPattern;
 	}
 
-	double getNstrobePattern() const {
+	double getNstrobePattern() const
+	{
 		return nstrobePattern;
 	}
 
-	void setNstrobePattern(double nstrobePattern) {
+	void setNstrobePattern(double nstrobePattern)
+	{
 		this->nstrobePattern = nstrobePattern;
 	}
 
-	double getNstrobeSpeed() const {
+	double getNstrobeSpeed() const
+	{
 		return nstrobeSpeed;
 	}
 
-	void setNstrobeSpeed(double nstrobeSpeed) {
+	void setNstrobeSpeed(double nstrobeSpeed)
+	{
 		this->nstrobeSpeed = nstrobeSpeed;
 	}
 
-	void setStrobeColor(const CRGB& strobeColor) {
+	void setStrobeColor(const CRGB &strobeColor)
+	{
 		this->strobeColor = strobeColor;
 	}
 
-
-	bool isFirst() const {
+	bool isFirst() const
+	{
 		return first;
 	}
 
-	void setFirst(bool first) {
+	void setFirst(bool first)
+	{
 		this->first = first;
 	}
 
-	double getLastcycle() const {
+	double getLastcycle() const
+	{
 		return lastcycle;
 	}
 
-	void setLastcycle(double lastcycle) {
+	void setLastcycle(double lastcycle)
+	{
 		this->lastcycle = lastcycle;
 	}
 
-	long getLaststep() const {
+	long getLaststep() const
+	{
 		return laststep;
 	}
 
-	void setLaststep(long laststep) {
+	void setLaststep(long laststep)
+	{
 		this->laststep = laststep;
 	}
 
-	double getNbaseDim() const {
+	double getNbaseDim() const
+	{
 		return nbaseDim;
 	}
 
-	void setNbaseDim(double nbaseDim) {
+	void setNbaseDim(double nbaseDim)
+	{
 		this->nbaseDim = nbaseDim;
 	}
 
-	double getNbaseSpeed() const {
+	double getNbaseSpeed() const
+	{
 		return nbaseSpeed;
 	}
 
-	void setNbaseSpeed(double nbaseSpeed) {
+	void setNbaseSpeed(double nbaseSpeed)
+	{
 		this->nbaseSpeed = nbaseSpeed;
 	}
 
-	double getNfrontDim() const {
+	double getNfrontDim() const
+	{
 		return nfrontDim;
 	}
 
-	void setNfrontDim(double nfrontDim) {
+	void setNfrontDim(double nfrontDim)
+	{
 		this->nfrontDim = nfrontDim;
 	}
 
-	double getNfrontSpeed() const {
+	double getNfrontSpeed() const
+	{
 		return nfrontSpeed;
 	}
 
-	void setNfrontSpeed(double nfrontSpeed) {
+	void setNfrontSpeed(double nfrontSpeed)
+	{
 		this->nfrontSpeed = nfrontSpeed;
 	}
 
-	double getNstrobeColor() const {
+	double getNstrobeColor() const
+	{
 		return nstrobeColor;
 	}
 
-	void setNstrobeColor(double nstrobeColor) {
+	void setNstrobeColor(double nstrobeColor)
+	{
 		this->nstrobeColor = nstrobeColor;
 	}
 
-	double getNstrobeDim() const {
+	double getNstrobeDim() const
+	{
 		return nstrobeDim;
 	}
 
-	void setNstrobeDim(double nstrobeDim) {
+	void setNstrobeDim(double nstrobeDim)
+	{
 		this->nstrobeDim = nstrobeDim;
 	}
 
-	bool isOnRand() const {
+	bool isOnRand() const
+	{
 		return onRand;
 	}
 
-	void setOnRand(bool onRand) {
+	void setOnRand(bool onRand)
+	{
 		this->onRand = onRand;
 	}
 
-	double getStep() const {
+	double getStep() const
+	{
 		return step;
 	}
 
-	void setStep(double step) {
+	void setStep(double step)
+	{
 		this->step = step;
 	}
 
-	uint32_t getStrobecounter() const {
+	uint32_t getStrobecounter() const
+	{
 		return strobecounter;
 	}
 
-	void setStrobecounter(uint32_t strobecounter) {
+	void setStrobecounter(uint32_t strobecounter)
+	{
 		this->strobecounter = strobecounter;
 	}
 
-	uint8_t getStrobeStep() const {
+	uint8_t getStrobeStep() const
+	{
 		return strobeStep;
 	}
 
-	void setStrobeStep(uint8_t strobeStep) {
+	void setStrobeStep(uint8_t strobeStep)
+	{
 		this->strobeStep = strobeStep;
 	}
 
-	bool isFirstStrobe() const {
+	bool isFirstStrobe() const
+	{
 		return first_strobe;
 	}
 
-	void setFirstStrobe(bool firstStrobe) {
+	void setFirstStrobe(bool firstStrobe)
+	{
 		first_strobe = firstStrobe;
 	}
 
-	long getStrobeStart() const {
+	long getStrobeStart() const
+	{
 		return strobe_start;
 	}
 
-	void setStrobeStart(long strobeStart) {
+	void setStrobeStart(long strobeStart)
+	{
 		strobe_start = strobeStart;
 	}
 
-	long getStrobeTime() const {
+	long getStrobeTime() const
+	{
 		return strobe_time;
 	}
 
-	void setStrobeTime(long strobeTime) {
+	void setStrobeTime(long strobeTime)
+	{
 		strobe_time = strobeTime;
 	}
 };

@@ -7,7 +7,7 @@
 
 #include "Pattern.h"
 
-Pattern::Pattern(CRGB *leds, size_t length)
+Pattern::Pattern(CRGB *leds, long *now, size_t length)
 {
 	// TODO Auto-generated constructor stub
 	this->leds = leds;
@@ -15,6 +15,7 @@ Pattern::Pattern(CRGB *leds, size_t length)
 	this->backleds = leds;
 	this->frontleds = leds + length / 2;
 	this->side_length = length / 2;
+	this->now = now;
 
 	nbasePattern = 1;
 	nbaseColor = 1;
@@ -738,13 +739,20 @@ void Pattern::setSettings()
 
 void Pattern::ballAFAP()
 {
+	static long lastShowTime = 0;
 	static int counter = 0;
-	fade_raw(leds, length, 10);
-	leds[counter] = CRGB::White;
-	counter++;
-	if (counter >= length)
+
+	long now = millis();
+	if (now - lastShowTime > 5)
 	{
-		counter = 0;
+		lastShowTime = now;
+		fade_raw(leds, length, 10);
+		leds[counter] = CRGB::White;
+		counter++;
+		if (counter >= length)
+		{
+			counter = 0;
+		}
 	}
 }
 
@@ -932,64 +940,55 @@ void Pattern::frontCompartmentUp()
 
 	int myPartStart = (this->maxPosition - this->position) * 5;
 	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
-	if (animationActive)
+
+	if (millisSinceBeat == 0)
 	{
-
-		if (millisSinceBeat == 0)
+		if (!animationRunning)
 		{
-			if (!animationRunning)
-			{
-				startTime = millis();
-				lastStepTime = startTime;
-				animationRunning = true;
-				animationCounter = 0;
-				myCounter = 0;
-				leds[2] = CRGB::Green;
-				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
-			}
-		}
-
-		long now = millis();
-		if (now - startTime > timeForAnimation)
-		{
-			animationRunning = false;
-			return;
-		}
-
-		if (animationRunning)
-		{
-			if (now - lastStepTime > stepTime)
-			{
-				fadeToBlackBy(leds, length, 200);
-				lastStepTime = now;
-				animationCounter++;
-				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
-				{
-
-					fillCompartmentFront(CRGB::Blue, 4 - myCounter);
-
-					myCounter++;
-				}
-				else
-				{
-					fill_solid(leds, length, CRGB::Black);
-				}
-
-				if (animationCounter >= groupLength)
-				{
-					animationCounter = 0;
-					myCounter = 0;
-					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
-				}
-				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
-			}
+			startTime = millis();
+			lastStepTime = startTime;
+			animationRunning = true;
+			animationCounter = 0;
+			myCounter = 0;
+			leds[2] = CRGB::Green;
+			DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
 		}
 	}
-	else
+
+	long now = millis();
+	if (now - startTime > timeForAnimation)
 	{
-		animationActive = false;
-		fill_solid(leds, length, CRGB::Black);
-		fillCompartmentBack(CRGB::Blue, this->position);
+		animationRunning = false;
+		return;
+	}
+
+	if (animationRunning)
+	{
+		if (now - lastStepTime > stepTime)
+		{
+			fadeToBlackBy(leds, length, 200);
+			lastStepTime = now;
+			animationCounter++;
+			if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
+			{
+
+				fillCompartmentFront(frontColor, 4 - myCounter);
+
+				myCounter++;
+			}
+			else
+			{
+				fill_solid(leds, length, CRGB::Black);
+			}
+
+			if (animationCounter >= groupLength)
+			{
+				animationCounter = 0;
+				myCounter = 0;
+				DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
+			}
+			DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
+		}
 	}
 }
 
@@ -1072,6 +1071,7 @@ void Pattern::frontCompartmentDown()
 
 void Pattern::frontChoser()
 {
+	/*
 	int temp = (int)nfrontPattern;
 
 	switch (temp)
@@ -1103,12 +1103,13 @@ void Pattern::frontChoser()
 	default:
 		break;
 	}
-	* /
+	*/
 }
 
 void Pattern::baseChoser()
 {
 	int temp = (int)nbasePattern;
+	ballAFAP();
 	//baseCompartmentDown();
 	/*
 	//Serial.println(temp);

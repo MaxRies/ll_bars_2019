@@ -80,6 +80,7 @@ long millisSinceBeat;
 long lastBeat;
 long now;
 long lastSave;
+long lastShowTime = 0;
 
 /* ESP VARIABLES */
 bool configMode = false;
@@ -770,11 +771,14 @@ void reactToMusic()
     }
   }
   pattern.baseChoser();
-  pattern.frontChoser();
+  //pattern.frontChoser();
   //pattern.strobeChoser();
-  //FastLED.setCorrection(TypicalSMD5050);
-  //FastLED.show((uint8_t)pattern.getDimVal());
-  FastLED.show();
+  if (now - lastShowTime > 5)
+  {
+    lastShowTime = now;
+    FastLED.setCorrection(TypicalSMD5050);
+    FastLED.show((uint8_t)pattern.getDimVal());
+  }
 }
 
 void lightshow()

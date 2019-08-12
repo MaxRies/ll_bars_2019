@@ -209,6 +209,12 @@ public:
 	void groupBallUp();
 	void groupBallDown();
 
+	void groupCompartmentUp();
+	void groupCompartmentDown();
+
+	void ballAFAP();
+	void strobeAFAP();
+
 	const CRGB &getBaseColor() const
 	{
 		return baseColor;

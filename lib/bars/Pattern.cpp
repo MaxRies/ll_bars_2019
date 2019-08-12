@@ -736,7 +736,110 @@ void Pattern::setSettings()
 	strobeColor = colors(temp);
 }
 
+void Pattern::ballAFAP()
+{
+	static int counter = 0;
+	fade_raw(leds, length, 10);
+	leds[counter] = CRGB::White;
+	counter++;
+	if (counter >= length)
+	{
+		counter = 0;
+	}
+}
+
+void Pattern::strobeAFAP()
+{
+	static bool on = false;
+	if (on)
+	{
+		fill_solid(leds, length, CRGB::Black);
+		on = false;
+	}
+	else
+	{
+		fill_solid(leds, length, CRGB::White);
+		on = true;
+	}
+}
+
 void Pattern::groupBallUp()
+{
+	static long startTime;
+	static bool animationRunning = false;
+	static int animationCounter = 0;
+	static int myCounter = 0;
+	static long lastStepTime = 0;
+	static long lastFadeTime = 0;
+
+	double timeForAnimation = 6000; // normalerweise um die 500
+	int groupLength = (this->maxPosition + 1) * side_length;
+	int stepTime = 10; // dann etwa 1.29 ms! Ob das reicht...
+
+	int myPartStart = this->position * side_length;
+	int myPartEnd = (this->position + 1) * side_length;
+	if (animationActive)
+	{
+		if (millisSinceBeat == 0)
+		{
+			if (!animationRunning)
+			{
+				startTime = millis();
+				lastStepTime = startTime;
+				animationRunning = true;
+				animationCounter = 0;
+				myCounter = 0;
+				leds[2] = CRGB::Green;
+				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
+			}
+		}
+
+		long now = millis();
+		if (now - startTime > timeForAnimation)
+		{
+			animationRunning = false;
+			return;
+		}
+
+		fadeToBlackBy(leds, length, 10);
+
+		if (animationRunning)
+		{
+			if (now - lastStepTime > stepTime)
+			{
+				lastStepTime = now;
+				animationCounter++;
+				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
+				{
+
+					fill_solid(frontleds + myCounter, 3, CRGB::White);
+
+					myCounter++;
+				}
+				else
+				{
+					fill_solid(leds, length, CRGB::Black);
+				}
+
+				if (animationCounter >= groupLength)
+				{
+					animationCounter = 0;
+					myCounter = 0;
+					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
+				}
+				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
+			}
+		}
+	}
+	else
+	{
+		animationActive = false;
+		fill_solid(leds, length, CRGB::Black);
+		fillCompartmentBack(CRGB::Blue, this->position);
+	}
+}
+
+void Pattern::groupCompartmentUp()
 {
 	static long startTime;
 	static bool animationRunning = false;
@@ -816,7 +919,7 @@ void Pattern::groupBallUp()
 void Pattern::frontChoser()
 {
 	//int temp = (int)nfrontPattern;
-	groupBallUp();
+	strobeAFAP();
 	/*
 	switch (temp)
 	{

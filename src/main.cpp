@@ -13,9 +13,9 @@
 #include <Protocol.h>
 
 // LED DEFINES
-#define FOREGROUND_NUM_LEDS 74
-#define BACKGROUND_NUM_LEDS 74
-#define NUM_LEDS 148
+#define FOREGROUND_NUM_LEDS 74 //74
+#define BACKGROUND_NUM_LEDS 74 //74
+#define NUM_LEDS 148           //148
 #define LED_PIN 12
 #define ONBOARDLED 2 // 1, 17, 21, 22 nicht.
 
@@ -113,10 +113,10 @@ void flash(int times, CRGB color)
   for (int i = 0; i < times; i++)
   {
     fill_solid(leds, NUM_LEDS, color);
-    FastLED.show();
+    FastLED.show(100);
     delay(250);
     fill_solid(leds, NUM_LEDS, CRGB::Black);
-    FastLED.show();
+    FastLED.show(100);
     delay(250);
   }
 }
@@ -133,13 +133,13 @@ void flashLoop(CRGB color)
     if (!ledOn)
     {
       fill_solid(leds, NUM_LEDS, color);
-      FastLED.show();
+      FastLED.show(100);
       ledOn = true;
     }
     else
     {
       fill_solid(leds, NUM_LEDS, CRGB::Black);
-      FastLED.show();
+      FastLED.show(100);
       ledOn = false;
     }
   }
@@ -270,7 +270,7 @@ void setupOTA()
   ArduinoOTA.onStart([]() {
     DEBUG_MSG("Start updating ");
     fill_solid(leds, NUM_LEDS, CRGB::Yellow);
-    FastLED.show();
+    FastLED.show(100);
   });
   ArduinoOTA.onEnd([]() {
     DEBUG_MSG("End \n");
@@ -284,12 +284,12 @@ void setupOTA()
 
       fill_solid(leds, NUM_LEDS, CRGB::Black);
       leds[ID] = CRGB::Green;
-      FastLED.show();
+      FastLED.show(100);
     }
   });
   ArduinoOTA.onError([](ota_error_t error) {
     fill_solid(leds, NUM_LEDS, CRGB::Red);
-    FastLED.show();
+    FastLED.show(100);
     delay(3000);
     DEBUG_MSG("Error[%u]: \n", error);
   });
@@ -671,8 +671,8 @@ int checkButton()
       else
       {
         fill_solid(leds, NUM_LEDS, CRGB::Black);
-        fill_solid(leds, position + 1, CRGB::Red);
-        fill_solid(leds + 10, group + 1, CRGB::Blue);
+        fill_solid(leds + 4, position + 1, CRGB::Red);
+        fill_solid(leds + 14, group + 1, CRGB::Blue);
         FastLED.show();
         delay(2000);
         //flash(3, CRGB::White);

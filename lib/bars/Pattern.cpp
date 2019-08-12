@@ -763,82 +763,6 @@ void Pattern::strobeAFAP()
 	}
 }
 
-void Pattern::groupBallUp()
-{
-	static long startTime;
-	static bool animationRunning = false;
-	static int animationCounter = 0;
-	static int myCounter = 0;
-	static long lastStepTime = 0;
-	static long lastFadeTime = 0;
-
-	double timeForAnimation = 6000; // normalerweise um die 500
-	int groupLength = (this->maxPosition + 1) * side_length;
-	int stepTime = 30; // dann etwa 1.29 ms! Ob das reicht...
-
-	int myPartStart = this->position * side_length;
-	int myPartEnd = (this->position + 1) * side_length;
-	if (animationActive)
-	{
-		if (millisSinceBeat == 0)
-		{
-			if (!animationRunning)
-			{
-				startTime = millis();
-				lastStepTime = startTime;
-				animationRunning = true;
-				animationCounter = 0;
-				myCounter = 0;
-				leds[2] = CRGB::Green;
-				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
-			}
-		}
-
-		long now = millis();
-		if (now - startTime > timeForAnimation)
-		{
-			animationRunning = false;
-			return;
-		}
-
-		fadeToBlackBy(leds, length, 10);
-
-		if (animationRunning)
-		{
-			if (now - lastStepTime > stepTime)
-			{
-				lastStepTime = now;
-				animationCounter++;
-				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
-				{
-
-					fill_solid(frontleds + myCounter, 3, CRGB::White);
-
-					myCounter++;
-				}
-				else
-				{
-					fill_solid(leds, length, CRGB::Black);
-				}
-
-				if (animationCounter >= groupLength)
-				{
-					animationCounter = 0;
-					myCounter = 0;
-					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
-				}
-				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
-			}
-		}
-	}
-	else
-	{
-		animationActive = false;
-		fill_solid(leds, length, CRGB::Black);
-		fillCompartmentBack(CRGB::Blue, this->position);
-	}
-}
-
 void Pattern::baseCompartmentUp()
 {
 	static long startTime;
@@ -929,8 +853,8 @@ void Pattern::baseCompartmentDown()
 	int groupLength = (this->maxPosition + 1) * 5;
 	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
 
-	int myPartStart = this->position * 5;
-	int myPartEnd = (this->position + 1) * 5;
+	int myPartStart = (this->maxPosition - this->position) * 5;
+	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
 	if (animationActive)
 	{
 
@@ -955,12 +879,12 @@ void Pattern::baseCompartmentDown()
 			return;
 		}
 
-		fadeToBlackBy(leds, length, 10);
-
 		if (animationRunning)
 		{
 			if (now - lastStepTime > stepTime)
 			{
+				fadeToBlackBy(leds, length, 200);
+
 				lastStepTime = now;
 				animationCounter++;
 				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
@@ -1006,8 +930,8 @@ void Pattern::frontCompartmentUp()
 	int groupLength = (this->maxPosition + 1) * 5;
 	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
 
-	int myPartStart = this->position * 5;
-	int myPartEnd = (this->position + 1) * 5;
+	int myPartStart = (this->maxPosition - this->position) * 5;
+	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
 	if (animationActive)
 	{
 
@@ -1032,18 +956,17 @@ void Pattern::frontCompartmentUp()
 			return;
 		}
 
-		fadeToBlackBy(leds, length, 10);
-
 		if (animationRunning)
 		{
 			if (now - lastStepTime > stepTime)
 			{
+				fadeToBlackBy(leds, length, 200);
 				lastStepTime = now;
 				animationCounter++;
 				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
 				{
 
-					fillCompartmentFront(CRGB::Red, 4 - myCounter);
+					fillCompartmentFront(CRGB::Blue, 4 - myCounter);
 
 					myCounter++;
 				}
@@ -1149,9 +1072,8 @@ void Pattern::frontCompartmentDown()
 
 void Pattern::frontChoser()
 {
-	//int temp = (int)nfrontPattern;
-	frontCompartmentUp();
-	/*
+	int temp = (int)nfrontPattern;
+
 	switch (temp)
 	{
 	case 1:
@@ -1175,15 +1097,19 @@ void Pattern::frontChoser()
 	case 7:
 		frontRand3();
 		break;
+	case 8:
+		//frontCompartmentUp();
+		break;
 	default:
 		break;
-	}*/
+	}
+	* /
 }
 
 void Pattern::baseChoser()
 {
 	int temp = (int)nbasePattern;
-	baseCompartmentUp();
+	//baseCompartmentDown();
 	/*
 	//Serial.println(temp);
 	switch (temp)

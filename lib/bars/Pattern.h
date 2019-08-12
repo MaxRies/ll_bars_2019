@@ -206,9 +206,6 @@ public:
 	void nextPosition();
 	void nextGroup();
 
-	void groupBallUp();
-	void groupBallDown();
-
 	void baseCompartmentUp();
 	void baseCompartmentDown();
 

@@ -30,7 +30,7 @@
 // WIFI DEFINES
 #define BRAINWIFI
 #define WIFI_WAIT 15
-#define MQTT_WAIT 15
+#define MQTT_WAIT 5
 const int ticker_port = 1103;
 
 // DEBUG
@@ -85,6 +85,7 @@ long lastSave;
 bool configMode = false;
 bool configured = true;
 bool wifiMode = false;
+long startupMillis = 0;
 char chipName[40];
 
 #ifdef BRAINWIFI
@@ -224,11 +225,14 @@ void setGroup(int newGroup)
   pattern.setGroup(newGroup);
   sprintf(topic0, "LLBars/groups/%i/maxPos", newGroup);
   client.subscribe(topic0);
+
+  group = newGroup;
 }
 
 void setPosition(int newPosition)
 {
   pattern.setPosition(newPosition);
+  position = newPosition;
 }
 
 /* SETUP FUNCTIONS */
@@ -365,7 +369,6 @@ void callback(char *topic, byte *payload, unsigned int length)
       setGroup(newGroup);
       DEBUG_MSG("Group Set: %u\n", newGroup);
       configured = true;
-      flash(group + 1, CRGB::Purple);
     }
   }
   else if (strstr(topic, "position") != NULL)
@@ -379,7 +382,6 @@ void callback(char *topic, byte *payload, unsigned int length)
       setPosition(newPosition);
       DEBUG_MSG("Position Set: %u\n", position);
       configured = true;
-      flash(position + 1, CRGB::Tomato);
     }
   }
   else if (strstr(topic, "mode") != NULL)
@@ -526,7 +528,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
 }
 
-void setupMQTT()
+void setupMQTT(bool reconnect = false, int connTimes = 0)
 {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -536,10 +538,30 @@ void setupMQTT()
   long startConnecting = millis();
   while (!client.connected())
   {
-    flashLoop(CRGB::Blue);
+
+    if (connTimes == 0)
+    {
+      flashLoop(CRGB::Blue);
+    }
+    else
+    {
+      flashLoop(CRGB::Orange);
+    }
 
     if (millis() - startConnecting > (MQTT_WAIT * 1000))
     {
+      if (reconnect)
+      {
+        if (connTimes < 2)
+        {
+          connTimes++;
+          setupMQTT(true, connTimes);
+        }
+        else
+        {
+          ESP.restart();
+        }
+      }
       wifiMode = false;
       return;
     }
@@ -549,8 +571,6 @@ void setupMQTT()
   char topic0[100];
   sprintf(topic0, "LLBars/hello");
   client.publish(topic0, chipName);
-  DEBUG_MSG("Subscribed to:");
-  DEBUG_MSG(topic0);
 
   char topic1[100];
   sprintf(topic1, "LLBars/%s/position/set", chipName);
@@ -721,7 +741,7 @@ void setTimes()
 
 void reactToMusic()
 {
-  setTimes();
+
   packetSize = Udp.parsePacket();
   remoteIP = Udp.remoteIP();
 
@@ -814,17 +834,17 @@ void connectionCheck()
     if (now - lastTryWifi > 15000)
     {
       WiFi.reconnect();
-      lastTryWifi = now;
     }
+    lastTryWifi = now;
   }
 
   if (!client.connected())
   {
     if (now - lastTryMQTT > 15000)
     {
-      setupMQTT();
-      lastTryMQTT = now;
+      setupMQTT(true);
     }
+    lastTryMQTT = now;
   }
 }
 
@@ -848,16 +868,20 @@ void setup()
   {
     flash(5, CRGB::Fuchsia);
   }
+  startupMillis = millis();
 }
 
 void loop()
 {
+  setTimes();
+
   blinkLed();
   if (wifiMode)
   {
     checkButton();
     client.loop();
     ArduinoOTA.handle();
+
     if (configMode)
     {
       if (digitalRead(BUTTONPIN) == LOW)
@@ -869,8 +893,8 @@ void loop()
         if (configured)
         {
           fill_solid(leds, NUM_LEDS, CRGB::Black);
-          fill_solid(leds + 5, pattern.getPosition(), CRGB::Red);
-          fill_solid(leds + 15, pattern.getGroup(), CRGB::Blue);
+          fill_solid(leds + 5, pattern.getPosition() + 1, CRGB::Red);
+          fill_solid(leds + 15, pattern.getGroup() + 1, CRGB::Blue);
           FastLED.show();
         }
         else

@@ -83,6 +83,7 @@ long lastSave;
 
 /* ESP VARIABLES */
 bool configMode = false;
+bool configured = true;
 bool wifiMode = false;
 char chipName[40];
 
@@ -363,6 +364,7 @@ void callback(char *topic, byte *payload, unsigned int length)
       int newGroup = atoi(value);
       setGroup(newGroup);
       DEBUG_MSG("Group Set: %u\n", newGroup);
+      configured = true;
       flash(group + 1, CRGB::Purple);
     }
   }
@@ -376,6 +378,7 @@ void callback(char *topic, byte *payload, unsigned int length)
       int newPosition = atoi(value);
       setPosition(newPosition);
       DEBUG_MSG("Position Set: %u\n", position);
+      configured = true;
       flash(position + 1, CRGB::Tomato);
     }
   }
@@ -388,12 +391,14 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
       configMode = true;
       DEBUG_MSG("Set mode to config mode");
+      configured = false;
       flash(3, CRGB::Yellow);
     }
     else if (strstr(value, "normal") != NULL)
     {
       configMode = false;
       DEBUG_MSG("Set mode to normal mode");
+      configured = true;
       flash(3, CRGB::Blue);
     }
     else if (strstr(value, "reset") != NULL)
@@ -744,7 +749,7 @@ void reactToMusic()
       }
     }
   }
-  //pattern.baseChoser();
+  pattern.baseChoser();
   pattern.frontChoser();
   //pattern.strobeChoser();
   //FastLED.setCorrection(TypicalSMD5050);
@@ -855,7 +860,24 @@ void loop()
     ArduinoOTA.handle();
     if (configMode)
     {
-      flashLoop(CRGB::Gold);
+      if (digitalRead(BUTTONPIN) == LOW)
+      {
+        flashLoop(CRGB::Tomato);
+      }
+      else
+      {
+        if (configured)
+        {
+          fill_solid(leds, NUM_LEDS, CRGB::Black);
+          fill_solid(leds + 5, pattern.getPosition(), CRGB::Red);
+          fill_solid(leds + 15, pattern.getGroup(), CRGB::Blue);
+          FastLED.show();
+        }
+        else
+        {
+          flashLoop(CRGB::Gold);
+        }
+      }
     }
     else
     {

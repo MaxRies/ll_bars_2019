@@ -209,8 +209,11 @@ public:
 	void groupBallUp();
 	void groupBallDown();
 
-	void groupCompartmentUp();
-	void groupCompartmentDown();
+	void baseCompartmentUp();
+	void baseCompartmentDown();
+
+	void frontCompartmentUp();
+	void frontCompartmentDown();
 
 	void ballAFAP();
 	void strobeAFAP();
@@ -540,9 +543,19 @@ public:
 		this->group = newGroup;
 	}
 
+	int getGroup()
+	{
+		return this->group;
+	}
+
 	void setPosition(int newPosition)
 	{
 		this->position = newPosition;
+	}
+
+	int getPosition()
+	{
+		return this->position;
 	}
 
 	void setMaxGroupNumber(int newMaxGroup)

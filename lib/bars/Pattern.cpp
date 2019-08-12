@@ -7,7 +7,7 @@
 
 #include "Pattern.h"
 
-Pattern::Pattern(CRGB *leds, long *now, size_t length)
+Pattern::Pattern(CRGB *leds, size_t length)
 {
 	// TODO Auto-generated constructor stub
 	this->leds = leds;
@@ -15,7 +15,6 @@ Pattern::Pattern(CRGB *leds, long *now, size_t length)
 	this->backleds = leds;
 	this->frontleds = leds + length / 2;
 	this->side_length = length / 2;
-	this->now = now;
 
 	nbasePattern = 1;
 	nbaseColor = 1;
@@ -38,6 +37,9 @@ Pattern::Pattern(CRGB *leds, long *now, size_t length)
 	position = 0;
 	maxGroup = 0;
 	maxPosition = 0;
+
+	now = 0;
+	lastShowTime = 0;
 
 	animationActive = false;
 }
@@ -739,13 +741,12 @@ void Pattern::setSettings()
 
 void Pattern::ballAFAP()
 {
-	static long lastShowTime = 0;
+	//static long lastShowTime = 0;
 	static int counter = 0;
 
-	long now = millis();
-	if (now - lastShowTime > 5)
+	if (canWeUpdate())
 	{
-		lastShowTime = now;
+		//lastShowTime = now;
 		fade_raw(leds, length, 10);
 		leds[counter] = CRGB::White;
 		counter++;
@@ -786,7 +787,7 @@ void Pattern::baseCompartmentUp()
 
 	int myPartStart = this->position * 5;
 	int myPartEnd = (this->position + 1) * 5;
-	if (animationActive)
+	if (canWeUpdate())
 	{
 
 		if (millisSinceBeat == 0)

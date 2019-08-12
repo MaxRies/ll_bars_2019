@@ -110,6 +110,17 @@ const char *mqtt_server = "192.168.178.23";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+/* TIME FUNCTIONS */
+void setTimes()
+{
+  now = millis();
+  pattern.setNow(now);
+  millisSinceSync = now - lastSync;
+  millisSinceBeat = now - lastBeat;
+  pattern.setMillisSinceBeat((double)millisSinceBeat);
+  pattern.setStrobeTime(millis() - pattern.getStrobeStart());
+}
+
 /* LED FUNCTIONS */
 void flash(int times, CRGB color)
 {
@@ -128,7 +139,7 @@ void flashLoop(CRGB color)
 {
   static long lastBlink = millis();
   static bool ledOn = false;
-  long now = millis();
+
   if (now - lastBlink > 500)
   {
     DEBUG_MSG(".");
@@ -187,7 +198,6 @@ void autoShow()
   static long lastChange = 0;
   if (autoShowOn)
   {
-    long now = millis();
     if (lastChange - now > 300000)
     {
       nextShow();
@@ -315,8 +325,9 @@ void setup_wifi()
   long startConnection = millis();
   while (WiFi.status() != WL_CONNECTED)
   {
+    setTimes();
     flashLoop(CRGB::Red);
-    if (millis() - startConnection > (WIFI_WAIT * 1000))
+    if (now - startConnection > (WIFI_WAIT * 1000))
     {
       wifiMode = false;
       break;
@@ -539,6 +550,7 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   long startConnecting = millis();
   while (!client.connected())
   {
+    setTimes();
 
     if (connTimes == 0)
     {
@@ -731,15 +743,6 @@ int checkButton()
   return result;
 }
 
-void setTimes()
-{
-  now = millis();
-  millisSinceSync = now - lastSync;
-  millisSinceBeat = now - lastBeat;
-  pattern.setMillisSinceBeat((double)millisSinceBeat);
-  pattern.setStrobeTime(millis() - pattern.getStrobeStart());
-}
-
 void reactToMusic()
 {
 
@@ -776,6 +779,7 @@ void reactToMusic()
   if (now - lastShowTime > 5)
   {
     lastShowTime = now;
+    pattern.setLastShowTime(lastShowTime);
     FastLED.setCorrection(TypicalSMD5050);
     FastLED.show((uint8_t)pattern.getDimVal());
   }
@@ -809,7 +813,6 @@ void blinkLed()
 {
   static long lastBlink = millis();
   static bool ledOn = false;
-  long now = millis();
   if (now - lastBlink > 1000)
   {
     lastBlink = now;
@@ -832,7 +835,7 @@ void connectionCheck()
 {
   static long lastTryWifi = 0;
   static long lastTryMQTT = 0;
-  long now = millis();
+  //long now = millis();
   if (WiFi.status() != WL_CONNECTED)
   {
     if (now - lastTryWifi > 15000)

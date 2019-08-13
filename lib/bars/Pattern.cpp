@@ -775,24 +775,26 @@ void Pattern::strobeAFAP()
 void Pattern::baseCompartmentUp()
 {
 	static long startTime;
+	static long lastStepTime;
 	static bool animationRunning = false;
 	static int animationCounter = 0;
 	static int myCounter = 0;
-	static long lastStepTime = 0;
-	static long lastFadeTime = 0;
+	int beatCounter = 0;
 
-	double timeForAnimation = 6000; // normalerweise um die 500
+	double timeForAnimation = 2 * beatPeriodMillis; // normalerweise um die 500
 	int groupLength = (this->maxPosition + 1) * 5;
-	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
+	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
 
 	int myPartStart = this->position * 5;
 	int myPartEnd = (this->position + 1) * 5;
-	if (canWeUpdate())
+
+	if (animationActive)
 	{
 
 		if (millisSinceBeat == 0)
 		{
-			if (!animationRunning)
+			beatCounter++;
+			if (beatCounter > 1)
 			{
 				startTime = millis();
 				lastStepTime = startTime;
@@ -804,17 +806,9 @@ void Pattern::baseCompartmentUp()
 			}
 		}
 
-		long now = millis();
-		if (now - startTime > timeForAnimation)
+		if (canWeUpdate())
 		{
-			animationRunning = false;
-			return;
-		}
-
-		fadeToBlackBy(leds, length, 10);
-
-		if (animationRunning)
-		{
+			fade_raw(leds, length, 20);
 			if (now - lastStepTime > stepTime)
 			{
 				lastStepTime = now;
@@ -840,12 +834,6 @@ void Pattern::baseCompartmentUp()
 				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
 			}
 		}
-	}
-	else
-	{
-		animationActive = false;
-		fill_solid(leds, length, CRGB::Black);
-		fillCompartmentBack(CRGB::Blue, this->position);
 	}
 }
 
@@ -956,24 +944,23 @@ void Pattern::frontCompartmentUp()
 		}
 	}
 
-	long now = millis();
 	if (now - startTime > timeForAnimation)
 	{
 		animationRunning = false;
 		return;
 	}
 
-	if (animationRunning)
+	if (canWeUpdate())
 	{
 		if (now - lastStepTime > stepTime)
 		{
 			fadeToBlackBy(leds, length, 200);
-			lastStepTime = now;
+
 			animationCounter++;
 			if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
 			{
 
-				fillCompartmentFront(frontColor, 4 - myCounter);
+				fillCompartmentFront(CRGB::Red, 4 - myCounter);
 
 				myCounter++;
 			}
@@ -1110,7 +1097,7 @@ void Pattern::frontChoser()
 void Pattern::baseChoser()
 {
 	int temp = (int)nbasePattern;
-	ballAFAP();
+	baseCompartmentUp();
 	//baseCompartmentDown();
 	/*
 	//Serial.println(temp);

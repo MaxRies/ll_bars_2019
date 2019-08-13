@@ -760,7 +760,11 @@ void reactToMusic()
       //Checke ob Synchronisierungspacket
       if (synchronising(recvBuffer, packetSize))
       {
+
         syncMesg.create(recvBuffer, packetSize);
+        char msg[40];
+        sprintf(msg, "direction: %c", syncMesg.direction);
+        Serial.println(msg);
         if (syncMesg.direction == '0')
         {
           DEBUG_MSG("REAL BEAT \n");

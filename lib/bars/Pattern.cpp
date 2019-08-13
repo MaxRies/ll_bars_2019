@@ -781,158 +781,17 @@ void Pattern::baseCompartmentUp()
 	static int myCounter = 0;
 	int beatCounter = 0;
 
-	double timeForAnimation = 2 * beatPeriodMillis; // normalerweise um die 500
+	double timeForAnimation = (4 * nbaseSpeed / 255 + 1) * beatPeriodMillis; // normalerweise um die 500
 	int groupLength = (this->maxPosition + 1) * 5;
 	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
 
 	int myPartStart = this->position * 5;
 	int myPartEnd = (this->position + 1) * 5;
 
-	if (animationActive)
-	{
-
-		if (millisSinceBeat == 0)
-		{
-			beatCounter++;
-			if (beatCounter > 1)
-			{
-				startTime = millis();
-				lastStepTime = startTime;
-				animationRunning = true;
-				animationCounter = 0;
-				myCounter = 0;
-				leds[2] = CRGB::Green;
-				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
-			}
-		}
-
-		if (canWeUpdate())
-		{
-			fade_raw(leds, length, 20);
-			if (now - lastStepTime > stepTime)
-			{
-				lastStepTime = now;
-				animationCounter++;
-				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
-				{
-
-					fillCompartmentBack(CRGB::Red, myCounter);
-
-					myCounter++;
-				}
-				else
-				{
-					fill_solid(leds, length, CRGB::Black);
-				}
-
-				if (animationCounter >= groupLength)
-				{
-					animationCounter = 0;
-					myCounter = 0;
-					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
-				}
-				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
-			}
-		}
-	}
-}
-
-void Pattern::baseCompartmentDown()
-{
-	static long startTime;
-	static bool animationRunning = false;
-	static int animationCounter = 0;
-	static int myCounter = 0;
-	static long lastStepTime = 0;
-	static long lastFadeTime = 0;
-
-	double timeForAnimation = 6000; // normalerweise um die 500
-	int groupLength = (this->maxPosition + 1) * 5;
-	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
-
-	int myPartStart = (this->maxPosition - this->position) * 5;
-	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
-	if (animationActive)
-	{
-
-		if (millisSinceBeat == 0)
-		{
-			if (!animationRunning)
-			{
-				startTime = millis();
-				lastStepTime = startTime;
-				animationRunning = true;
-				animationCounter = 0;
-				myCounter = 0;
-				leds[2] = CRGB::Green;
-				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
-			}
-		}
-
-		long now = millis();
-		if (now - startTime > timeForAnimation)
-		{
-			animationRunning = false;
-			return;
-		}
-
-		if (animationRunning)
-		{
-			if (now - lastStepTime > stepTime)
-			{
-				fadeToBlackBy(leds, length, 200);
-
-				lastStepTime = now;
-				animationCounter++;
-				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
-				{
-
-					fillCompartmentBack(CRGB::Red, 4 - myCounter);
-
-					myCounter++;
-				}
-				else
-				{
-					fill_solid(leds, length, CRGB::Black);
-				}
-
-				if (animationCounter >= groupLength)
-				{
-					animationCounter = 0;
-					myCounter = 0;
-					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
-				}
-				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
-			}
-		}
-	}
-	else
-	{
-		animationActive = false;
-		fill_solid(leds, length, CRGB::Black);
-		fillCompartmentBack(CRGB::Blue, this->position);
-	}
-}
-
-void Pattern::frontCompartmentUp()
-{
-	static long startTime;
-	static bool animationRunning = false;
-	static int animationCounter = 0;
-	static int myCounter = 0;
-	static long lastStepTime = 0;
-	static long lastFadeTime = 0;
-
-	double timeForAnimation = 6000; // normalerweise um die 500
-	int groupLength = (this->maxPosition + 1) * 5;
-	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
-
-	int myPartStart = (this->maxPosition - this->position) * 5;
-	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
-
 	if (millisSinceBeat == 0)
 	{
-		if (!animationRunning)
+		beatCounter++;
+		if (beatCounter > 1)
 		{
 			startTime = millis();
 			lastStepTime = startTime;
@@ -944,23 +803,78 @@ void Pattern::frontCompartmentUp()
 		}
 	}
 
-	if (now - startTime > timeForAnimation)
-	{
-		animationRunning = false;
-		return;
-	}
-
 	if (canWeUpdate())
 	{
+		fade_raw(leds, length, 10);
 		if (now - lastStepTime > stepTime)
 		{
-			fadeToBlackBy(leds, length, 200);
-
+			lastStepTime = now;
 			animationCounter++;
 			if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
 			{
 
-				fillCompartmentFront(CRGB::Red, 4 - myCounter);
+				fillCompartmentBack(baseColor, myCounter);
+
+				myCounter++;
+			}
+			else
+			{
+				fill_solid(leds, length, CRGB::Black);
+			}
+
+			if (animationCounter >= groupLength)
+			{
+				animationCounter = 0;
+				myCounter = 0;
+				DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
+			}
+			DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
+		}
+	}
+}
+
+void Pattern::baseCompartmentDown()
+{
+	static long startTime;
+	static long lastStepTime;
+	static bool animationRunning = false;
+	static int animationCounter = 0;
+	static int myCounter = 0;
+	int beatCounter = 0;
+
+	double timeForAnimation = (4 * nbaseSpeed / 255 + 1) * beatPeriodMillis; // normalerweise um die 500
+	int groupLength = (this->maxPosition + 1) * 5;
+	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
+
+	int myPartStart = (this->maxPosition - this->position) * 5;
+	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
+
+	if (millisSinceBeat == 0)
+	{
+		beatCounter++;
+		if (beatCounter > 1)
+		{
+			startTime = millis();
+			lastStepTime = startTime;
+			animationRunning = true;
+			animationCounter = 0;
+			myCounter = 0;
+			leds[2] = CRGB::Green;
+			DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
+		}
+	}
+
+	if (canWeUpdate())
+	{
+		fade_raw(leds, length, 10);
+		if (now - lastStepTime > stepTime)
+		{
+			lastStepTime = now;
+			animationCounter++;
+			if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
+			{
+
+				fillCompartmentBack(baseColor, 4 - myCounter);
 
 				myCounter++;
 			}
@@ -983,83 +897,127 @@ void Pattern::frontCompartmentUp()
 void Pattern::frontCompartmentDown()
 {
 	static long startTime;
+	static long lastStepTime;
 	static bool animationRunning = false;
 	static int animationCounter = 0;
 	static int myCounter = 0;
-	static long lastStepTime = 0;
-	static long lastFadeTime = 0;
+	int beatCounter = 0;
 
-	double timeForAnimation = 6000; // normalerweise um die 500
+	double timeForAnimation = (4 * nbaseSpeed / 255 + 1) * beatPeriodMillis; // normalerweise um die 500
 	int groupLength = (this->maxPosition + 1) * 5;
-	int stepTime = 100; // dann etwa 1.29 ms! Ob das reicht...
+	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
 
 	int myPartStart = this->position * 5;
 	int myPartEnd = (this->position + 1) * 5;
-	if (animationActive)
+
+	if (millisSinceBeat == 0)
 	{
-
-		if (millisSinceBeat == 0)
+		beatCounter++;
+		if (beatCounter > 1)
 		{
-			if (!animationRunning)
-			{
-				startTime = millis();
-				lastStepTime = startTime;
-				animationRunning = true;
-				animationCounter = 0;
-				myCounter = 0;
-				leds[2] = CRGB::Green;
-				DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
-			}
-		}
-
-		long now = millis();
-		if (now - startTime > timeForAnimation)
-		{
-			animationRunning = false;
-			return;
-		}
-
-		fadeToBlackBy(leds, length, 10);
-
-		if (animationRunning)
-		{
-			if (now - lastStepTime > stepTime)
-			{
-				lastStepTime = now;
-				animationCounter++;
-				if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
-				{
-
-					fillCompartmentFront(CRGB::Red, myCounter);
-
-					myCounter++;
-				}
-				else
-				{
-					fill_solid(leds, length, CRGB::Black);
-				}
-
-				if (animationCounter >= groupLength)
-				{
-					animationCounter = 0;
-					myCounter = 0;
-					DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
-				}
-				DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
-			}
+			startTime = millis();
+			lastStepTime = startTime;
+			animationRunning = true;
+			animationCounter = 0;
+			myCounter = 0;
+			leds[2] = CRGB::Green;
+			DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
 		}
 	}
-	else
+
+	if (canWeUpdate())
 	{
-		animationActive = false;
-		fill_solid(leds, length, CRGB::Black);
-		fillCompartmentBack(CRGB::Blue, this->position);
+		fade_raw(leds, length, 10);
+		if (now - lastStepTime > stepTime)
+		{
+			lastStepTime = now;
+			animationCounter++;
+			if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
+			{
+
+				fillCompartmentFront(frontColor, myCounter);
+
+				myCounter++;
+			}
+			else
+			{
+				fill_solid(leds, length, CRGB::Black);
+			}
+
+			if (animationCounter >= groupLength)
+			{
+				animationCounter = 0;
+				myCounter = 0;
+				DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
+			}
+			DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
+		}
+	}
+}
+
+void Pattern::frontCompartmentUp()
+{
+	static long startTime;
+	static long lastStepTime;
+	static bool animationRunning = false;
+	static int animationCounter = 0;
+	static int myCounter = 0;
+	int beatCounter = 0;
+
+	double timeForAnimation = (4 * nbaseSpeed / 255 + 1) * beatPeriodMillis; // normalerweise um die 500
+	int groupLength = (this->maxPosition + 1) * 5;
+	int stepTime = timeForAnimation / groupLength; // dann etwa 1.29 ms! Ob das reicht...
+
+	int myPartStart = (this->maxPosition - this->position) * 5;
+	int myPartEnd = ((this->maxPosition - this->position) + 1) * 5;
+
+	if (millisSinceBeat == 0)
+	{
+		beatCounter++;
+		if (beatCounter > 1)
+		{
+			startTime = millis();
+			lastStepTime = startTime;
+			animationRunning = true;
+			animationCounter = 0;
+			myCounter = 0;
+			leds[2] = CRGB::Green;
+			DEBUG_MSG("START GROUP ANIMATION\n -----------------------------\n");
+		}
+	}
+
+	if (canWeUpdate())
+	{
+		fade_raw(leds, length, 10);
+		if (now - lastStepTime > stepTime)
+		{
+			lastStepTime = now;
+			animationCounter++;
+			if ((animationCounter > myPartStart) && (animationCounter <= myPartEnd))
+			{
+
+				fillCompartmentFront(frontColor, 4 - myCounter);
+
+				myCounter++;
+			}
+			else
+			{
+				fill_solid(leds, length, CRGB::Black);
+			}
+
+			if (animationCounter >= groupLength)
+			{
+				animationCounter = 0;
+				myCounter = 0;
+				DEBUG_MSG("END GROUP ANIMATION\n -----------------------------\n");
+			}
+			DEBUG_MSG("myCounter: %i \t animationCounter: %i\n", myCounter, animationCounter);
+		}
 	}
 }
 
 void Pattern::frontChoser()
 {
-	/*
 	int temp = (int)nfrontPattern;
 
 	switch (temp)
@@ -1086,20 +1044,20 @@ void Pattern::frontChoser()
 		frontRand3();
 		break;
 	case 8:
-		//frontCompartmentUp();
+		frontCompartmentUp();
+		break;
+	case 9:
+		frontCompartmentDown();
 		break;
 	default:
 		break;
 	}
-	*/
 }
 
 void Pattern::baseChoser()
 {
 	int temp = (int)nbasePattern;
-	baseCompartmentUp();
-	//baseCompartmentDown();
-	/*
+
 	//Serial.println(temp);
 	switch (temp)
 	{
@@ -1119,13 +1077,16 @@ void Pattern::baseChoser()
 		baseCompartements();
 		break;
 	case 6:
-		baseStatic();
+		baseCompartmentUp();
+		break;
+	case 7:
+		baseCompartmentDown();
 		break;
 	default:
 		fillBlack();
 		break;
 	}
-	*/
+	* /
 }
 
 void Pattern::fillCompartmentBack(CRGB color, int num)
@@ -1257,6 +1218,26 @@ void Pattern::colorChooser(int number)
 	nfrontColor = colorCombinations[number][0];
 	nbaseColor = colorCombinations[number][1];
 	nstrobeColor = colorCombinations[number][2];
+
+	setSettings();
+}
+
+void Pattern::speedChooser(int number)
+{
+	/*
+		@param number between 0 and 447
+	 */
+	if (number < 0)
+	{
+		number = 0;
+	}
+	else if (number > 26)
+	{
+		number = 26;
+	}
+	setNfrontSpeed(speedCombinations[number][0]);
+	setNbaseSpeed(speedCombinations[number][1]);
+	setNstrobeSpeed(speedCombinations[number][2]);
 
 	setSettings();
 }

@@ -319,6 +319,7 @@ void setup_wifi()
   // We start by connecting to a WiFi network
   DEBUG_MSG("Connecting to %s", ssid);
 
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
   wifiMode = true;
@@ -421,6 +422,10 @@ void callback(char *topic, byte *payload, unsigned int length)
       DEBUG_MSG("Reset group and position");
       group = 0;
       position = 0;
+      pattern.setGroup(0);
+      pattern.setPosition(0);
+      pattern.setMaxGroupNumber(0);
+      pattern.setMaxPositionNumber(0);
       flash(3, CRGB::HotPink);
     }
   }
@@ -429,7 +434,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int patternNumber = map(rawNumber, 0, 65536, 0, 167);
+    int patternNumber = map(rawNumber, 0, 65536, 0, 94);
     pattern.patternChooser(patternNumber);
     DEBUG_MSG("SET PATTERN NUMBER TO: %i \n", patternNumber);
   }
@@ -447,7 +452,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int colorNumber = map(rawNumber, 0, 65536, 0, 447);
+    int colorNumber = map(rawNumber, 0, 65536, 0, 100);
     pattern.colorChooser(colorNumber);
     DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
   }
@@ -456,10 +461,8 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 225);
-    pattern.setNbaseSpeed(number);
-    pattern.setNfrontSpeed(number);
-    pattern.setNstrobeSpeed(number);
+    int number = map(rawNumber, 0, 65536, 0, 28);
+    pattern.speedChooser(number);
     DEBUG_MSG("SET SPEED TO: %i \n", number);
   }
   else if (strstr(topic, "basespeed") != NULL)
@@ -538,6 +541,40 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     pattern.animationActive = !pattern.animationActive;
   }
+  else if (strstr(topic, "LLBars/basepat") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber < 0)
+      rawNumber = 0;
+    if (rawNumber > 9)
+      rawNumber = 9;
+    pattern.setNbasePattern(rawNumber);
+    pattern.setSettings();
+  }
+  else if (strstr(topic, "LLBars/frontpat") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber < 0)
+      rawNumber = 0;
+    if (rawNumber > 8)
+      rawNumber = 8;
+    pattern.setNfrontPattern(rawNumber);
+  }
+  else if (strstr(topic, "LLBars/strobepat") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber < 0)
+      rawNumber = 0;
+    if (rawNumber > 4)
+      rawNumber = 4;
+    pattern.setNstrobePattern(rawNumber);
+  }
 }
 
 void setupMQTT(bool reconnect = false, int connTimes = 0)
@@ -603,8 +640,7 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   DEBUG_MSG("Subscribed to:");
   DEBUG_MSG(topic3);
 
-  sprintf(topic3, "LLBars/groups/maxGroups", group);
-  client.subscribe(topic3);
+  client.subscribe("LLBars/groups/maxGroups");
   DEBUG_MSG("Subscribed to:");
   DEBUG_MSG(topic3);
 
@@ -640,6 +676,15 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
 
   client.subscribe("LLBars/showpattern");
   DEBUG_MSG("Subscribed to: LLBars/showpattern\n");
+
+  client.subscribe("LLBars/basepat");
+  DEBUG_MSG("SUBSCRIBED TO LLBars/basepat");
+
+  client.subscribe("LLBars/frontpat");
+  DEBUG_MSG("SUBSCRIBED TO LLBars/frontpat");
+
+  client.subscribe("LLBars/strobepat");
+  DEBUG_MSG("SUBSCRIBED TO LLbars/strobepat");
 
   client.subscribe("activate");
   DEBUG_MSG("Subscribed to: activate\n");
@@ -762,9 +807,6 @@ void reactToMusic()
       {
 
         syncMesg.create(recvBuffer, packetSize);
-        char msg[40];
-        sprintf(msg, "direction: %c", syncMesg.direction);
-        Serial.println(msg);
         if (syncMesg.direction == '0')
         {
           DEBUG_MSG("REAL BEAT \n");
@@ -778,8 +820,8 @@ void reactToMusic()
     }
   }
   pattern.baseChoser();
-  //pattern.frontChoser();
-  //pattern.strobeChoser();
+  pattern.frontChoser();
+  pattern.strobeChoser();
   if (now - lastShowTime > 5)
   {
     lastShowTime = now;

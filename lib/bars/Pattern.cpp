@@ -26,9 +26,9 @@ Pattern::Pattern(CRGB *leds, size_t length)
 	nfrontSpeed = 125;
 	nfrontDim = 120;
 
-	nstrobePattern = 1;
+	nstrobePattern = 0;
 	nstrobeColor = 1;
-	nstrobeSpeed = 200;
+	nstrobeSpeed = 100;
 	nstrobeDim = 200.0;
 
 	dimVal = 255;
@@ -74,18 +74,21 @@ double Pattern::quadApp(double amp1, double amp2, double deltax, double x)
 
 void Pattern::baseLinDimm()
 {
-	if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis)
+	if (canWeUpdate())
 	{
-		CRGB col(baseColor);
+		if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis)
+		{
+			CRGB col(baseColor);
 
-		col.r = (unsigned int)(linearApp(col.r, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		col.g = (unsigned int)(linearApp(col.g, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		col.b = (unsigned int)(linearApp(col.b, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		fill_solid(backleds, side_length, dimByVal(col, nbaseDim));
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
+			col.r = (unsigned int)(linearApp(col.r, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			col.g = (unsigned int)(linearApp(col.g, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			col.b = (unsigned int)(linearApp(col.b, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			fill_solid(backleds, side_length, dimByVal(col, nbaseDim));
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+		}
 	}
 }
 
@@ -108,13 +111,16 @@ void Pattern::baseQuadDimm()
 
 void Pattern::baseRectDimm()
 {
-	if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis)
+	if (canWeUpdate())
 	{
-		fill_solid(this->backleds, side_length, dimByVal(baseColor, nbaseDim));
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
+		if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis)
+		{
+			fill_solid(this->backleds, side_length, dimByVal(baseColor, nbaseDim));
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+		}
 	}
 }
 void Pattern::baseStatic()
@@ -136,18 +142,21 @@ void Pattern::baseQuadDimmRand50()
 	{
 		first = true;
 	}
-	if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis && onRand)
+	if (canWeUpdate())
 	{
-		CRGB col(baseColor);
+		if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis && onRand)
+		{
+			CRGB col(baseColor);
 
-		col.r = (unsigned int)(quadApp(col.r, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		col.g = (unsigned int)(quadApp(col.g, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		col.b = (unsigned int)(quadApp(col.b, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		fill_solid(backleds, side_length, dimByVal(col, nbaseDim));
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
+			col.r = (unsigned int)(quadApp(col.r, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			col.g = (unsigned int)(quadApp(col.g, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			col.b = (unsigned int)(quadApp(col.b, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			fill_solid(backleds, side_length, dimByVal(col, nbaseDim));
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+		}
 	}
 }
 
@@ -163,18 +172,21 @@ void Pattern::baseCompartements()
 		first = true;
 	}
 
-	if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis)
+	if (canWeUpdate())
 	{
-		CRGB col(baseColor);
+		if (millisSinceBeat < nbaseSpeed / 255 * beatPeriodMillis)
+		{
+			CRGB col(baseColor);
 
-		col.r = (unsigned int)(quadApp(col.r, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		col.g = (unsigned int)(quadApp(col.g, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		col.b = (unsigned int)(quadApp(col.b, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
-		fillCompartmentBack(dimByVal(col, nbaseDim), comp);
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
+			col.r = (unsigned int)(quadApp(col.r, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			col.g = (unsigned int)(quadApp(col.g, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			col.b = (unsigned int)(quadApp(col.b, 0, nbaseSpeed / 255 * beatPeriodMillis, millisSinceBeat));
+			fillCompartmentBack(dimByVal(col, nbaseDim), comp);
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+		}
 	}
 }
 
@@ -199,33 +211,36 @@ void Pattern::frontBallUp()
 		//Serial.println(step);
 	}
 
-	if (millis() - laststep > step)
+	if (canWeUpdate())
 	{
-		//Serial.println("Step");
-		for (int i = 0; i < BALL_COUNT; i++)
+		if (millis() - laststep > step)
 		{
-			if (balls[i].active == true)
+			//Serial.println("Step");
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				balls[i].pos++;
-				if (balls[i].pos < side_length)
+				if (balls[i].active == true)
+				{
+					balls[i].pos++;
+					if (balls[i].pos < side_length)
+					{
+						backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					}
+					else
+					{
+						balls[i].active = false;
+					}
+				}
+			}
+			laststep = millis();
+		}
+		else
+		{
+			for (int i = 0; i < BALL_COUNT; i++)
+			{
+				if (balls[i].active == true)
 				{
 					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
 				}
-				else
-				{
-					balls[i].active = false;
-				}
-			}
-		}
-		laststep = millis();
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
-		{
-			if (balls[i].active == true)
-			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
 			}
 		}
 	}
@@ -252,34 +267,37 @@ void Pattern::frontBallDown()
 		//Serial.println(step);
 	}
 
-	if (millis() - laststep > step)
+	if (canWeUpdate())
 	{
-		//Serial.println("Step");
-		for (int i = 0; i < BALL_COUNT; i++)
+		if (millis() - laststep > step)
 		{
-			if (balls[i].active == true)
+			//Serial.println("Step");
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
+				if (balls[i].active == true)
+				{
 
-				if (balls[i].pos > 0)
-				{
-					balls[i].pos--;
-					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
-				}
-				else
-				{
-					balls[i].active = false;
+					if (balls[i].pos > 0)
+					{
+						balls[i].pos--;
+						backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					}
+					else
+					{
+						balls[i].active = false;
+					}
 				}
 			}
+			laststep = millis();
 		}
-		laststep = millis();
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
+		else
 		{
-			if (balls[i].active == true)
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+				if (balls[i].active == true)
+				{
+					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+				}
 			}
 		}
 	}
@@ -306,33 +324,36 @@ void Pattern::frontBallIn()
 		//Serial.println(step);
 	}
 
-	if (millis() - laststep > step)
+	if (canWeUpdate())
 	{
-		//Serial.println("Step");
-		for (int i = 0; i < BALL_COUNT; i++)
+		if (millis() - laststep > step)
 		{
-			if (balls[i].active == true)
+			//Serial.println("Step");
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				balls[i].pos++;
-				if (balls[i].pos < length)
+				if (balls[i].active == true)
+				{
+					balls[i].pos++;
+					if (balls[i].pos < length)
+					{
+						backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					}
+					else
+					{
+						balls[i].active = false;
+					}
+				}
+			}
+			laststep = millis();
+		}
+		else
+		{
+			for (int i = 0; i < BALL_COUNT; i++)
+			{
+				if (balls[i].active == true)
 				{
 					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
 				}
-				else
-				{
-					balls[i].active = false;
-				}
-			}
-		}
-		laststep = millis();
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
-		{
-			if (balls[i].active == true)
-			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
 			}
 		}
 	}
@@ -359,34 +380,37 @@ void Pattern::frontBallOut()
 		//Serial.println(step);
 	}
 
-	if (millis() - laststep > step)
+	if (canWeUpdate())
 	{
-		//Serial.println("Step");
-		for (int i = 0; i < BALL_COUNT; i++)
+		if (millis() - laststep > step)
 		{
-			if (balls[i].active == true)
+			//Serial.println("Step");
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
+				if (balls[i].active == true)
+				{
 
-				if (balls[i].pos > 0)
-				{
-					balls[i].pos--;
-					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
-				}
-				else
-				{
-					balls[i].active = false;
+					if (balls[i].pos > 0)
+					{
+						balls[i].pos--;
+						backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					}
+					else
+					{
+						balls[i].active = false;
+					}
 				}
 			}
+			laststep = millis();
 		}
-		laststep = millis();
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
+		else
 		{
-			if (balls[i].active == true)
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+				if (balls[i].active == true)
+				{
+					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+				}
 			}
 		}
 	}
@@ -407,33 +431,36 @@ void Pattern::frontRand1()
 			balls[i].pos = rand() % (side_length);
 		}
 	}
-	if (millisSinceBeat < beatPeriodMillis)
+	if (canWeUpdate())
 	{
-		CRGB col(frontColor);
+		if (millisSinceBeat < beatPeriodMillis)
+		{
+			CRGB col(frontColor);
 
-		/*col.r = (unsigned int)quadApp(col.r, 0, dutyCycle/255 * beatPeriodMillis, millisSinceBeat);
+			/*col.r = (unsigned int)quadApp(col.r, 0, dutyCycle/255 * beatPeriodMillis, millisSinceBeat);
 		col.g = (unsigned int)quadApp(col.g, 0, dutyCycle/255 * beatPeriodMillis, millisSinceBeat);
 		col.b = (unsigned int)quadApp(col.b, 0, dutyCycle/255 * beatPeriodMillis, millisSinceBeat);*/
 
-		for (int i = 0; i < BALL_COUNT; i++)
-		{
-			if (balls[i].active)
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+				if (balls[i].active)
+				{
+					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+				}
 			}
 		}
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
+		else
 		{
-			if (balls[i].active)
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				backleds[balls[i].pos] = CRGB::Black;
+				if (balls[i].active)
+				{
+					backleds[balls[i].pos] = CRGB::Black;
+				}
 			}
 		}
+		lastcycle = millisSinceBeat;
 	}
-	lastcycle = millisSinceBeat;
 }
 
 void Pattern::frontRand2()
@@ -456,49 +483,51 @@ void Pattern::frontRand2()
 		laststep = millis();
 		//Serial.println(step);
 	}
-
-	if (millis() - laststep > step)
+	if (canWeUpdate())
 	{
-		//Serial.println("Step");
-		for (int i = 0; i < BALL_COUNT; i++)
+		if (millis() - laststep > step)
 		{
-			if (balls[i].active == true)
+			//Serial.println("Step");
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				balls[i].pos++;
-				if (balls[i].pos < side_length)
+				if (balls[i].active == true)
 				{
-					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
-				}
-				else
-				{
-					balls[i].active = false;
-				}
-				if (balls[i].pos > 0)
-				{
-					backleds[balls[i].pos - 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
-				}
-				if (balls[i].pos > 1)
-				{
-					backleds[balls[i].pos - 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					balls[i].pos++;
+					if (balls[i].pos < side_length)
+					{
+						backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					}
+					else
+					{
+						balls[i].active = false;
+					}
+					if (balls[i].pos > 0)
+					{
+						backleds[balls[i].pos - 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
+					}
+					if (balls[i].pos > 1)
+					{
+						backleds[balls[i].pos - 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					}
 				}
 			}
+			laststep = millis();
 		}
-		laststep = millis();
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
+		else
 		{
-			if (balls[i].active == true)
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
-				if (balls[i].pos > 0)
+				if (balls[i].active == true)
 				{
-					backleds[balls[i].pos - 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
-				}
-				if (balls[i].pos > 1)
-				{
-					backleds[balls[i].pos - 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					if (balls[i].pos > 0)
+					{
+						backleds[balls[i].pos - 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
+					}
+					if (balls[i].pos > 1)
+					{
+						backleds[balls[i].pos - 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					}
 				}
 			}
 		}
@@ -526,49 +555,52 @@ void Pattern::frontRand3()
 		//Serial.println(step);
 	}
 
-	if (millis() - laststep > step)
+	if (canWeUpdate())
 	{
-		//Serial.println("Step");
-		for (int i = 0; i < BALL_COUNT; i++)
+		if (millis() - laststep > step)
 		{
-			if (balls[i].active == true)
+			//Serial.println("Step");
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
+				if (balls[i].active == true)
+				{
 
-				if (balls[i].pos > 0)
-				{
-					balls[i].pos--;
-					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
-				}
-				else
-				{
-					balls[i].active = false;
-				}
-				if (balls[i].pos < side_length - 1)
-				{
-					backleds[balls[i].pos + 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
-				}
-				if (balls[i].pos < side_length - 2)
-				{
-					backleds[balls[i].pos + 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					if (balls[i].pos > 0)
+					{
+						balls[i].pos--;
+						backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					}
+					else
+					{
+						balls[i].active = false;
+					}
+					if (balls[i].pos < side_length - 1)
+					{
+						backleds[balls[i].pos + 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
+					}
+					if (balls[i].pos < side_length - 2)
+					{
+						backleds[balls[i].pos + 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					}
 				}
 			}
+			laststep = millis();
 		}
-		laststep = millis();
-	}
-	else
-	{
-		for (int i = 0; i < BALL_COUNT; i++)
+		else
 		{
-			if (balls[i].active == true)
+			for (int i = 0; i < BALL_COUNT; i++)
 			{
-				backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
-				if (balls[i].pos < side_length - 1)
+				if (balls[i].active == true)
 				{
-					backleds[balls[i].pos + 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
-				}
-				if (balls[i].pos < side_length - 2)
-				{
-					backleds[balls[i].pos + 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					backleds[balls[i].pos] = dimByVal(balls[i].color, nfrontDim);
+					if (balls[i].pos < side_length - 1)
+					{
+						backleds[balls[i].pos + 1] = dimByVal(balls[i].color, nfrontDim * 0.5);
+					}
+					if (balls[i].pos < side_length - 2)
+					{
+						backleds[balls[i].pos + 2] = dimByVal(balls[i].color, nfrontDim * 0.1);
+					}
 				}
 			}
 		}
@@ -578,15 +610,18 @@ void Pattern::frontRand3()
 void Pattern::strobeStandard()
 {
 	//Serial.print("StandardStrobe.\n");
-	if (strobe_time % (int)(nstrobeSpeed) < 20)
+	if (canWeUpdate())
 	{
+		if (strobe_time % (int)(nstrobeSpeed) < 20)
+		{
 
-		fill_solid(leds, length, dimByVal(strobeColor, nstrobeDim));
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
-		strobeStep++;
+			fill_solid(leds, length, dimByVal(strobeColor, nstrobeDim));
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+			strobeStep++;
+		}
 	}
 }
 
@@ -601,15 +636,18 @@ void Pattern::strobeRand()
 	{
 		first = true;
 	}
-	if (strobe_time % (int)(nstrobeSpeed) < 20)
+	if (canWeUpdate())
 	{
-		fillCompartmentBack(dimByVal(strobeColor, nstrobeDim), strobe_comp);
-		fillCompartmentFront(dimByVal(strobeColor, nstrobeDim), strobe_comp);
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
-		strobeStep++;
+		if (strobe_time % (int)(nstrobeSpeed) < 20)
+		{
+			fillCompartmentBack(dimByVal(strobeColor, nstrobeDim), strobe_comp);
+			fillCompartmentFront(dimByVal(strobeColor, nstrobeDim), strobe_comp);
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+			strobeStep++;
+		}
 	}
 }
 
@@ -624,15 +662,19 @@ void Pattern::strobeHalf()
 	{
 		first = true;
 	}
-	if (strobe_time % (int)(nstrobeSpeed) < 20)
+	if (canWeUpdate())
 	{
-		fillCompartmentBack(dimByVal(strobeColor, nstrobeDim), strobe_comp % 5);
-		fillCompartmentFront(dimByVal(strobeColor, nstrobeDim), strobe_comp % 5);
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
-		strobeStep++;
+
+		if (strobe_time % (int)(nstrobeSpeed) < 20)
+		{
+			fillCompartmentBack(dimByVal(strobeColor, nstrobeDim), strobe_comp % 5);
+			fillCompartmentFront(dimByVal(strobeColor, nstrobeDim), strobe_comp % 5);
+		}
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+			strobeStep++;
+		}
 	}
 }
 
@@ -652,20 +694,23 @@ void Pattern::strobePow()
 	{
 		first_strobe = true;
 	}
-	if (strobe_time % (int)(nstrobeSpeed) < 20)
+	if (canWeUpdate())
 	{
-		for (int i = 0; i < 4; i++)
+		if (strobe_time % (int)(nstrobeSpeed) < 20)
 		{
-			if (balls[i].active)
+			for (int i = 0; i < 4; i++)
 			{
-				leds[balls[i].pos] = balls[i].color;
+				if (balls[i].active)
+				{
+					leds[balls[i].pos] = balls[i].color;
+				}
 			}
 		}
-	}
-	else
-	{
-		fill_solid(leds, length, CRGB::Black);
-		strobeStep++;
+		else
+		{
+			fill_solid(leds, length, CRGB::Black);
+			strobeStep++;
+		}
 	}
 }
 
@@ -898,7 +943,6 @@ void Pattern::frontCompartmentDown()
 {
 	static long startTime;
 	static long lastStepTime;
-	static bool animationRunning = false;
 	static int animationCounter = 0;
 	static int myCounter = 0;
 	int beatCounter = 0;
@@ -917,7 +961,6 @@ void Pattern::frontCompartmentDown()
 		{
 			startTime = millis();
 			lastStepTime = startTime;
-			animationRunning = true;
 			animationCounter = 0;
 			myCounter = 0;
 			leds[2] = CRGB::Green;
@@ -959,7 +1002,6 @@ void Pattern::frontCompartmentUp()
 {
 	static long startTime;
 	static long lastStepTime;
-	static bool animationRunning = false;
 	static int animationCounter = 0;
 	static int myCounter = 0;
 	int beatCounter = 0;
@@ -978,7 +1020,6 @@ void Pattern::frontCompartmentUp()
 		{
 			startTime = millis();
 			lastStepTime = startTime;
-			animationRunning = true;
 			animationCounter = 0;
 			myCounter = 0;
 			leds[2] = CRGB::Green;
@@ -1016,9 +1057,113 @@ void Pattern::frontCompartmentUp()
 	}
 }
 
+void Pattern::cycleGroup()
+{
+	/* Alternating group strobe */
+	static long timeForAnimation = 500;
+	static bool cycleComplete = true;
+	static long startTime;
+	static long myStartTime;
+	static long myEndTime;
+	static long lightTime;
+	static float lightToBlackRatio = 0.25;
+
+	if (millisSinceBeat == 0 && cycleComplete)
+	{
+		DEBUG_MSG("SET SETTINGS FOR CYCLE GROUP\n");
+		cycleComplete = false;
+		timeForAnimation = beatPeriodMillis;
+		startTime = now;
+		myStartTime = now + timeForAnimation * group;
+		myEndTime = now + timeForAnimation * (group + 1);
+		lightTime = lightToBlackRatio * timeForAnimation + myStartTime;
+		leds[2] = CRGB::Green;
+	}
+	if (canWeUpdate())
+	{
+		if (now >= myStartTime && now < myEndTime)
+		{
+			if (now <= lightTime)
+			{
+				fill_solid(backleds, side_length, baseColor);
+			}
+			else
+			{
+				fade_raw(backleds, side_length, 15);
+			}
+		}
+		else
+		{
+			// space for less bright animation
+			fill_solid(backleds, side_length, CRGB::Black); //debugging
+		}
+	}
+	if ((now > (startTime + timeForAnimation)) && !cycleComplete)
+	{
+		cycleComplete = true;
+		DEBUG_MSG("CYCLE DONE!\n");
+	}
+	else
+	{
+		DEBUG_MSG("CYCLE RUNNING!");
+	}
+}
+
+void Pattern::cycleGroupShow()
+{
+	/* Alternating group strobe */
+	static long timeForAnimation = 500;
+	static bool cycleComplete = true;
+	static long startTime;
+	static long myStartTime;
+	static long myEndTime;
+	static long lightTime;
+	static float lightToBlackRatio = 0.25;
+
+	if (millisSinceBeat == 0 && cycleComplete)
+	{
+		DEBUG_MSG("SET SETTINGS FOR CYCLE GROUP\n");
+		cycleComplete = false;
+		timeForAnimation = beatPeriodMillis;
+		startTime = now;
+		myStartTime = now + timeForAnimation * group;
+		myEndTime = now + timeForAnimation * (group + 1);
+		lightTime = lightToBlackRatio * timeForAnimation + myStartTime;
+		leds[2] = CRGB::Green;
+	}
+	if (canWeUpdate())
+	{
+		if (now >= myStartTime && now < myEndTime)
+		{
+			if (now <= lightTime)
+			{
+				fill_solid(backleds, side_length, baseColor);
+			}
+			else
+			{
+				fade_raw(backleds, side_length, 15);
+			}
+		}
+		else
+		{
+			// space for less bright animation
+			fill_solid(backleds, side_length, CRGB::Black); //debugging
+		}
+	}
+	if ((now > (startTime + timeForAnimation)) && !cycleComplete)
+	{
+		cycleComplete = true;
+		DEBUG_MSG("CYCLE DONE!\n");
+	}
+	else
+	{
+		DEBUG_MSG("CYCLE RUNNING!");
+	}
+}
+
 void Pattern::frontChoser()
 {
-	int temp = (int)nfrontPattern;
+	int temp = (int)this->nfrontPattern;
 
 	switch (temp)
 	{
@@ -1056,9 +1201,7 @@ void Pattern::frontChoser()
 
 void Pattern::baseChoser()
 {
-	int temp = (int)nbasePattern;
-
-	//Serial.println(temp);
+	int temp = (int)this->nbasePattern;
 	switch (temp)
 	{
 	case 1:
@@ -1082,11 +1225,13 @@ void Pattern::baseChoser()
 	case 7:
 		baseCompartmentDown();
 		break;
+	case 8:
+		cycleGroup();
+		break;
 	default:
 		fillBlack();
 		break;
 	}
-	* /
 }
 
 void Pattern::fillCompartmentBack(CRGB color, int num)
@@ -1157,7 +1302,7 @@ void Pattern::fillCompartementOneRand(CRGB color, int num)
 void Pattern::strobeChoser()
 {
 	//Serial.printf("StrobePattern %i\n", (int)nstrobePattern);
-	int temp = (int)nstrobePattern;
+	int temp = (int)this->nstrobePattern;
 	if (temp >= 1)
 	{
 		fillBlack();
@@ -1186,15 +1331,15 @@ void Pattern::strobeChoser()
 void Pattern::patternChooser(int number)
 {
 	/*
-		@param number between 0 and 167.
+		@param number between 0 and 93.
 	 */
 	if (number < 0)
 	{
 		number = 0;
 	}
-	else if (number > 167)
+	else if (number > 93)
 	{
-		number = 167;
+		number = 93;
 	}
 
 	nfrontPattern = patternCombinations[number][0];
@@ -1205,19 +1350,19 @@ void Pattern::patternChooser(int number)
 void Pattern::colorChooser(int number)
 {
 	/*
-		@param number between 0 and 447
+		@param number between 0 and 99
 	 */
 	if (number < 0)
 	{
 		number = 0;
 	}
-	else if (number > 447)
+	else if (number > 99)
 	{
-		number = 447;
+		number = 99;
 	}
 	nfrontColor = colorCombinations[number][0];
 	nbaseColor = colorCombinations[number][1];
-	nstrobeColor = colorCombinations[number][2];
+	nstrobeColor = colorCombinations[number][1]; // strobe color is always base color!
 
 	setSettings();
 }
@@ -1225,7 +1370,7 @@ void Pattern::colorChooser(int number)
 void Pattern::speedChooser(int number)
 {
 	/*
-		@param number between 0 and 447
+		@param number between 0 and 26
 	 */
 	if (number < 0)
 	{

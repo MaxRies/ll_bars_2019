@@ -792,7 +792,7 @@ void Pattern::ballAFAP()
 	if (canWeUpdate())
 	{
 		//lastShowTime = now;
-		fade_raw(leds, length, 10);
+		fade_raw(leds, length, 20);
 		leds[counter] = CRGB::White;
 		counter++;
 		if (counter >= length)
@@ -1109,55 +1109,69 @@ void Pattern::cycleGroup()
 	}
 }
 
-void Pattern::cycleGroupShow()
+void Pattern::cycleBaseCompartments()
 {
 	/* Alternating group strobe */
-	static long timeForAnimation = 500;
+	static long totalAnimationEndTime;
+	static long myGroupAnimationStart;
+	static long lastStepTime;
+	static int myGroupSteps;
+	static int myStartSteps;
+	static int myEndSteps;
+	static int currentStep;
+	static double stepTime;
 	static bool cycleComplete = true;
-	static long startTime;
-	static long myStartTime;
-	static long myEndTime;
-	static long lightTime;
-	static float lightToBlackRatio = 0.25;
+	static int myStep;
 
 	if (millisSinceBeat == 0 && cycleComplete)
 	{
+		leds[2] = CRGB::Green;
 		DEBUG_MSG("SET SETTINGS FOR CYCLE GROUP\n");
 		cycleComplete = false;
-		timeForAnimation = beatPeriodMillis;
-		startTime = now;
-		myStartTime = now + timeForAnimation * group;
-		myEndTime = now + timeForAnimation * (group + 1);
-		lightTime = lightToBlackRatio * timeForAnimation + myStartTime;
-		leds[2] = CRGB::Green;
+		totalAnimationEndTime = now + (this->maxGroup + 1) * 2 * beatPeriodMillis + 20; //plus 20 um letzter Gruppe bisschen Zeit zu geben
+		myGroupAnimationStart = now + (this->group) * 2 * beatPeriodMillis;
+		myGroupSteps = (this->maxPosition + 1) * 5;
+		myStartSteps = (this->position) * 5;
+		myEndSteps = (this->position + 1) * 5;
+		stepTime = (2 * beatPeriodMillis / ((this->maxPosition + 1) * 5));
+		lastStepTime = 0;
+		myStep = 0;
+		currentStep = 0;
 	}
 	if (canWeUpdate())
 	{
-		if (now >= myStartTime && now < myEndTime)
+		if (now < totalAnimationEndTime)
 		{
-			if (now <= lightTime)
+			if (now >= myGroupAnimationStart)
 			{
-				fill_solid(backleds, side_length, baseColor);
+				fade_raw(leds, length, 10);
+				if (now - lastStepTime > stepTime)
+				{
+					lastStepTime = now;
+					if ((currentStep >= myStartSteps) && (currentStep <= myEndSteps))
+					{
+						fillCompartmentBack(baseColor, myStep);
+						fillCompartmentFront(frontColor, 4 - myStep);
+						myStep++;
+					}
+					else
+					{
+						fill_solid(backleds, side_length, CRGB::Black);
+					}
+					currentStep++;
+				}
 			}
 			else
 			{
-				fade_raw(backleds, side_length, 15);
+				// space for less bright animation
+				fill_solid(backleds, side_length, CRGB::Black);
 			}
 		}
 		else
 		{
-			// space for less bright animation
-			fill_solid(backleds, side_length, CRGB::Black); //debugging
+			fade_raw(leds, length, 10);
+			cycleComplete = true;
 		}
-	}
-	if ((now > (startTime + timeForAnimation)) && !cycleComplete)
-	{
-		cycleComplete = true;
-		DEBUG_MSG("CYCLE DONE!\n");
-	}
-	else
-	{
-		DEBUG_MSG("CYCLE RUNNING!");
 	}
 }
 
@@ -1227,6 +1241,9 @@ void Pattern::baseChoser()
 		break;
 	case 8:
 		cycleGroup();
+		break;
+	case 9:
+		cycleBaseCompartments();
 		break;
 	default:
 		fillBlack();
@@ -1331,15 +1348,15 @@ void Pattern::strobeChoser()
 void Pattern::patternChooser(int number)
 {
 	/*
-		@param number between 0 and 93.
+		@param number between 0 and 103.
 	 */
 	if (number < 0)
 	{
 		number = 0;
 	}
-	else if (number > 93)
+	else if (number > 103)
 	{
-		number = 93;
+		number = 103;
 	}
 
 	nfrontPattern = patternCombinations[number][0];

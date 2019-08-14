@@ -1,4 +1,4 @@
-#define VERSION 11
+#define VERSION 12
 
 #include <Arduino.h>
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -88,6 +88,8 @@ bool configured = true;
 bool wifiMode = false;
 long startupMillis = 0;
 char chipName[40];
+
+bool findMeFlash = false;
 
 #ifdef BRAINWIFI
 const char *ssid = "llbrain2";
@@ -560,8 +562,8 @@ void callback(char *topic, byte *payload, unsigned int length)
     int rawNumber = atoi(value);
     if (rawNumber < 0)
       rawNumber = 0;
-    if (rawNumber > 8)
-      rawNumber = 8;
+    if (rawNumber > 9)
+      rawNumber = 9;
     pattern.setNfrontPattern(rawNumber);
   }
   else if (strstr(topic, "LLBars/strobepat") != NULL)
@@ -574,6 +576,20 @@ void callback(char *topic, byte *payload, unsigned int length)
     if (rawNumber > 4)
       rawNumber = 4;
     pattern.setNstrobePattern(rawNumber);
+  }
+  else if (strstr(topic, "flash") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber == 1)
+    {
+      findMeFlash = true;
+    }
+    else
+    {
+      findMeFlash = false;
+    }
   }
 }
 
@@ -685,6 +701,11 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
 
   client.subscribe("LLBars/strobepat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/strobepat");
+
+  sprintf(topic1, "LLBars/%s/flash", chipName);
+  client.subscribe(topic1);
+  DEBUG_MSG("Subscribed to:");
+  DEBUG_MSG(topic1);
 
   client.subscribe("activate");
   DEBUG_MSG("Subscribed to: activate\n");
@@ -948,7 +969,11 @@ void loop()
           fill_solid(leds, NUM_LEDS, CRGB::Black);
           fill_solid(leds + 5, pattern.getPosition() + 1, CRGB::Red);
           fill_solid(leds + 15, pattern.getGroup() + 1, CRGB::Blue);
-          FastLED.show();
+          if (now - lastShowTime > 5)
+          {
+            lastShowTime = now;
+            FastLED.show();
+          }
         }
         else
         {
@@ -958,7 +983,19 @@ void loop()
     }
     else
     {
-      reactToMusic();
+      if (findMeFlash)
+      {
+        pattern.ballAFAP();
+        if (now - lastShowTime > 5)
+        {
+          lastShowTime = now;
+          FastLED.show();
+        }
+      }
+      else
+      {
+        reactToMusic();
+      }
     }
     //lightshow();
     connectionCheck();

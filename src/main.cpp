@@ -29,7 +29,7 @@
 
 // WIFI DEFINES
 #define BRAINWIFI
-#define WIFI_WAIT 15
+#define WIFI_WAIT 30
 #define MQTT_WAIT 5
 const int ticker_port = 1103;
 
@@ -866,14 +866,18 @@ void lightshow()
     DEBUG_MSG("FAKE BEAT\n");
   }
 
-  //pattern.baseChoser();
+  pattern.baseChoser();
 
   pattern.frontChoser();
 
-  //pattern.strobeChoser();
-
-  FastLED.setCorrection(TypicalSMD5050);
-  FastLED.show((uint8_t)pattern.getDimVal());
+  pattern.strobeChoser();
+  if (now - lastShowTime > 5)
+  {
+    lastShowTime = now;
+    pattern.setLastShowTime(lastShowTime);
+    FastLED.setCorrection(TypicalSMD5050);
+    FastLED.show((uint8_t)pattern.getDimVal());
+  }
 }
 
 void blinkLed()

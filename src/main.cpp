@@ -51,8 +51,8 @@ CRGB leds[NUM_LEDS];
 CRGB *fg_leds = &leds[BACKGROUND_NUM_LEDS];
 CRGB *bg_leds = &leds[0];
 Pattern pattern(leds, NUM_LEDS);
-int noWifiShowPattern = 1;
-bool autoShowOn = false;
+int noWifiShowPattern = 2;
+bool autoShowOn = true;
 
 /* CHRISTOPH PATTERN VARIABLES */
 IPAddress remoteIP;

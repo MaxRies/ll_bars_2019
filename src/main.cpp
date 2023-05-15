@@ -1,4 +1,4 @@
-#define VERSION 12
+#define VERSION 13
 
 #include <Arduino.h>
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -577,6 +577,18 @@ void callback(char *topic, byte *payload, unsigned int length)
       rawNumber = 4;
     pattern.setNstrobePattern(rawNumber);
   }
+  else if (strstr(topic, "LLBars/fakebeat") != NULL)
+  {
+    // FAKEBEAT HERE
+    
+    pattern.setBeatPeriodMillis((double) 500.0);
+    pattern.setMillisSinceBeat((double)0.0);
+    millisSinceBeat = 0.0;
+    lastBeat = now;
+    DEBUG_MSG("MQTT BEAT\n");
+
+  }
+  
   else if (strstr(topic, "flash") != NULL)
   {
     char value[20];
@@ -701,6 +713,10 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
 
   client.subscribe("LLBars/strobepat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/strobepat");
+
+  
+  client.subscribe("LLBars/fakebeat");
+  DEBUG_MSG("SUBSCRIBED TO LLbars/fakebeat");
 
   sprintf(topic1, "LLBars/%s/flash", chipName);
   client.subscribe(topic1);

@@ -13,9 +13,9 @@
 #include <Protocol.h>
 
 // LED DEFINES
-#define FOREGROUND_NUM_LEDS 74 //74
-#define BACKGROUND_NUM_LEDS 74 //74
-#define NUM_LEDS 148           //148
+#define FOREGROUND_NUM_LEDS 74 // 74
+#define BACKGROUND_NUM_LEDS 74 // 74
+#define NUM_LEDS 148           // 148
 #define LED_PIN 12
 #define ONBOARDLED 2 // 1, 17, 21, 22 nicht.
 
@@ -68,11 +68,11 @@ char recvBuffer[MAX_PACKET_SIZE];
 
 WiFiUDP Udp;
 
-//subscribeMessage subMesg;
+// subscribeMessage subMesg;
 synchronisingMessage syncMesg;
-//settingMessage setMesg;
-//pushingMessage pushMesg;
-//statusingMessage statMesg;
+// settingMessage setMesg;
+// pushingMessage pushMesg;
+// statusingMessage statMesg;
 
 long millisSinceSync;
 long lastSync;
@@ -264,7 +264,7 @@ void setupLEDs()
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
   flash(3, CRGB::Red);
-  //pattern.getValues();
+  // pattern.getValues();
 }
 
 void setupBeatListener()
@@ -285,16 +285,17 @@ void setupOTA()
 {
   DEBUG_MSG("Setting up OTA...\n");
   ArduinoOTA.setHostname(chipName);
-  ArduinoOTA.onStart([]() {
+  ArduinoOTA.onStart([]()
+                     {
     DEBUG_MSG("Start updating ");
     fill_solid(leds, NUM_LEDS, CRGB::Yellow);
-    FastLED.show(100);
-  });
-  ArduinoOTA.onEnd([]() {
+    FastLED.show(100); });
+  ArduinoOTA.onEnd([]()
+                   {
     DEBUG_MSG("End \n");
-    flash(3, CRGB::Azure);
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    flash(3, CRGB::Azure); });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
+                        {
     int percent = progress / (total / 100);
     int ID = (int)74.0 * (percent / 100.0);
     if ((ID < NUM_LEDS) && (ID > 0))
@@ -303,14 +304,13 @@ void setupOTA()
       fill_solid(leds, NUM_LEDS, CRGB::Black);
       leds[ID] = CRGB::Green;
       FastLED.show(100);
-    }
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
+    } });
+  ArduinoOTA.onError([](ota_error_t error)
+                     {
     fill_solid(leds, NUM_LEDS, CRGB::Red);
     FastLED.show(100);
     delay(3000);
-    DEBUG_MSG("Error[%u]: \n", error);
-  });
+    DEBUG_MSG("Error[%u]: \n", error); });
   ArduinoOTA.begin();
   DEBUG_MSG("OTA READY! \n");
 }
@@ -580,15 +580,14 @@ void callback(char *topic, byte *payload, unsigned int length)
   else if (strstr(topic, "LLBars/fakebeat") != NULL)
   {
     // FAKEBEAT HERE
-    
-    pattern.setBeatPeriodMillis((double) 500.0);
+
+    pattern.setBeatPeriodMillis((double)500.0);
     pattern.setMillisSinceBeat((double)0.0);
     millisSinceBeat = 0.0;
     lastBeat = now;
     DEBUG_MSG("MQTT BEAT\n");
-
   }
-  
+
   else if (strstr(topic, "flash") != NULL)
   {
     char value[20];
@@ -714,7 +713,6 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/strobepat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/strobepat");
 
-  
   client.subscribe("LLBars/fakebeat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/fakebeat");
 
@@ -795,7 +793,7 @@ int checkButton()
         fill_solid(leds + 14, group + 1, CRGB::Blue);
         FastLED.show();
         delay(2000);
-        //flash(3, CRGB::White);
+        // flash(3, CRGB::White);
       }
     }
     else
@@ -831,15 +829,15 @@ void reactToMusic()
   packetSize = Udp.parsePacket();
   remoteIP = Udp.remoteIP();
 
-  //Lese das Packet und reagiere
+  // Lese das Packet und reagiere
   if (packetSize > 0)
   {
     if (packetSize <= MAX_PACKET_SIZE)
     {
 
       Udp.read(recvBuffer, packetSize);
-      //Serial.print(recvBuffer);
-      //Checke ob Synchronisierungspacket
+      // Serial.print(recvBuffer);
+      // Checke ob Synchronisierungspacket
       if (synchronising(recvBuffer, packetSize))
       {
 
@@ -907,13 +905,13 @@ void blinkLed()
     {
       digitalWrite(ONBOARDLED, HIGH);
       ledOn = true;
-      //DEBUG_MSG("ON");
+      // DEBUG_MSG("ON");
     }
     else
     {
       digitalWrite(ONBOARDLED, LOW);
       ledOn = false;
-      //DEBUG_MSG("OFF");
+      // DEBUG_MSG("OFF");
     }
   }
 }
@@ -922,7 +920,7 @@ void connectionCheck()
 {
   static long lastTryWifi = 0;
   static long lastTryMQTT = 0;
-  //long now = millis();
+  // long now = millis();
   if (WiFi.status() != WL_CONNECTED)
   {
     if (now - lastTryWifi > 15000)
@@ -970,42 +968,23 @@ void loop()
   setTimes();
 
   blinkLed();
-  if (wifiMode)
-  {
-    checkButton();
-    client.loop();
-    ArduinoOTA.handle();
+  checkButton();
+  client.loop();
+  ArduinoOTA.handle();
 
-    if (configMode)
+  if (configMode)
+  {
+    if (digitalRead(BUTTONPIN) == LOW)
     {
-      if (digitalRead(BUTTONPIN) == LOW)
-      {
-        flashLoop(CRGB::Tomato);
-      }
-      else
-      {
-        if (configured)
-        {
-          fill_solid(leds, NUM_LEDS, CRGB::Black);
-          fill_solid(leds + 5, pattern.getPosition() + 1, CRGB::Red);
-          fill_solid(leds + 15, pattern.getGroup() + 1, CRGB::Blue);
-          if (now - lastShowTime > 5)
-          {
-            lastShowTime = now;
-            FastLED.show();
-          }
-        }
-        else
-        {
-          flashLoop(CRGB::Gold);
-        }
-      }
+      flashLoop(CRGB::Tomato);
     }
     else
     {
-      if (findMeFlash)
+      if (configured)
       {
-        pattern.ballAFAP();
+        fill_solid(leds, NUM_LEDS, CRGB::Black);
+        fill_solid(leds + 5, pattern.getPosition() + 1, CRGB::Red);
+        fill_solid(leds + 15, pattern.getGroup() + 1, CRGB::Blue);
         if (now - lastShowTime > 5)
         {
           lastShowTime = now;
@@ -1014,16 +993,26 @@ void loop()
       }
       else
       {
-        reactToMusic();
+        flashLoop(CRGB::Gold);
       }
     }
-    //lightshow();
-    connectionCheck();
   }
   else
   {
-    // noConnection show mode
-    checkButton();
-    lightshow();
+    if (findMeFlash)
+    {
+      pattern.ballAFAP();
+      if (now - lastShowTime > 5)
+      {
+        lastShowTime = now;
+        FastLED.show();
+      }
+    }
+    else
+    {
+      reactToMusic();
+    }
   }
+  // lightshow();
+  connectionCheck();
 }

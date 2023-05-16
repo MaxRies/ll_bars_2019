@@ -293,7 +293,6 @@ void setup_wifi()
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  wifiMode = true;
   long startConnection = millis();
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -306,17 +305,8 @@ void setup_wifi()
     }
     yield();
   }
-  if (wifiMode)
-  {
-    flash(3, CRGB::ForestGreen);
-    DEBUG_MSG("WiFi connected\n");
-  }
-  else
-  {
-    flash(3, CRGB::Fuchsia);
-    DEBUG_MSG("NO WIFI FOUND\n");
-  }
-  // DEBUG_MSG("IP address: %u", WiFi.localIP().toString());
+  flash(3, CRGB::ForestGreen);
+  DEBUG_MSG("WiFi connected\n");
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -605,10 +595,10 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
         }
         else
         {
+          flash(3, CRGB::Purple);
           ESP.restart();
         }
       }
-      wifiMode = false;
       return;
     }
     yield();
@@ -617,6 +607,10 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   char topic0[100];
   sprintf(topic0, "LLBars/hello");
   client.publish(topic0, chipName);
+
+  char topicIP[100];
+  sprintf(topicIP, "LLBars/%s/IP", chipName);
+  client.publish(topicIP, WiFi.localIP().toString().c_str());
 
   char topic1[100];
   sprintf(topic1, "LLBars/%s/position/set", chipName);
@@ -795,18 +789,10 @@ void setup()
   setupChip();
   setupLEDs();
   setup_wifi();
-
-  if (wifiMode)
-  {
-    setupMQTT();
-    setupOTA();
-    setupBeatListener();
-    flash(5, CRGB::Green);
-  }
-  else
-  {
-    flash(5, CRGB::Fuchsia);
-  }
+  setupMQTT();
+  setupOTA();
+  setupBeatListener();
+  flash(5, CRGB::Green);
   startupMillis = millis();
 }
 
@@ -833,6 +819,5 @@ void loop()
     {
       reactToMusic();
     }
-  // lightshow();
   connectionCheck();
 }

@@ -126,6 +126,9 @@ void setTimes()
 /* LED FUNCTIONS */
 void flash(int times, CRGB color)
 {
+  /*
+  Blocking flashing function.
+  */
   for (int i = 0; i < times; i++)
   {
     fill_solid(leds, NUM_LEDS, color);
@@ -139,6 +142,9 @@ void flash(int times, CRGB color)
 
 void flashLoop(CRGB color)
 {
+  /*
+  Non-blocking flashing function.
+  */
   static long lastBlink = millis();
   static bool ledOn = false;
 
@@ -172,16 +178,6 @@ void flashOnboard(int n)
   }
 }
 
-void nextShow()
-{
-  noWifiShowPattern++;
-  if (noWifiShowPattern > 167)
-  {
-    noWifiShowPattern = 0;
-  }
-  pattern.patternChooser(noWifiShowPattern);
-}
-
 void selectShow(int show)
 {
   if (show > 167)
@@ -193,33 +189,6 @@ void selectShow(int show)
     show = 0;
   }
   pattern.patternChooser(show);
-}
-
-void autoShow()
-{
-  static long lastChange = 0;
-  if (autoShowOn)
-  {
-    if (lastChange - now > 300000)
-    {
-      nextShow();
-      lastChange = now;
-    }
-  }
-}
-
-void toggleAutoShow()
-{
-  if (autoShowOn)
-  {
-    autoShowOn = false;
-    flash(1, CRGB::Red);
-  }
-  else
-  {
-    autoShowOn = true;
-    flash(1, CRGB::Green);
-  }
 }
 
 void DEBUG_MQTT(const char *message)
@@ -332,8 +301,8 @@ void setup_wifi()
     flashLoop(CRGB::Red);
     if (now - startConnection > (WIFI_WAIT * 1000))
     {
-      wifiMode = false;
-      break;
+      flash(1, CRGB::Yellow);
+      ESP.restart();
     }
     yield();
   }
@@ -728,101 +697,6 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   DEBUG_MSG("MQTT Setup DONE!");
 }
 
-int checkButton()
-{
-  static bool buttonPushed = false;
-  static long buttonPressStart;
-  int result;
-
-  if (digitalRead(BUTTONPIN) == LOW)
-  {
-    if (!buttonPushed)
-    {
-      DEBUG_MSG("button pressed.");
-      buttonPushed = true;
-      buttonPressStart = millis();
-      delay(50);
-    }
-    result = UNDECIDED;
-  }
-  else
-  {
-    if (buttonPushed)
-    {
-      DEBUG_MSG("button released.");
-      long timeHeld = millis() - buttonPressStart;
-      DEBUG_MSG("Held for: %i ", timeHeld);
-      buttonPushed = false;
-      delay(50);
-      if (timeHeld > LONGPUSHTIME)
-      {
-        result = LONGPUSH;
-        DEBUG_MSG("result = longpush");
-      }
-      else if (timeHeld > PUSHTHRESHOLD)
-      {
-        result = SHORTPUSH;
-        DEBUG_MSG("result = shortpush");
-      }
-      else
-      {
-        result = UNDECIDED;
-      }
-    }
-    else
-    {
-      result = UNDECIDED;
-    }
-  }
-
-  if (result == SHORTPUSH)
-  {
-    if (wifiMode)
-    {
-      if (configMode)
-      {
-        DEBUG_MSG("publish shortpush");
-        char topic[100];
-        sprintf(topic, "LLBars/%s/button", chipName);
-        client.publish(topic, "short");
-      }
-      else
-      {
-        fill_solid(leds, NUM_LEDS, CRGB::Black);
-        fill_solid(leds + 4, position + 1, CRGB::Red);
-        fill_solid(leds + 14, group + 1, CRGB::Blue);
-        FastLED.show();
-        delay(2000);
-        // flash(3, CRGB::White);
-      }
-    }
-    else
-    {
-      nextShow();
-      DEBUG_MSG("NEXT SHOW");
-    }
-  }
-  else if (result == LONGPUSH)
-  {
-    if (wifiMode)
-    {
-      if (configMode)
-      {
-        DEBUG_MSG("publish longpush");
-        char topic[100];
-        sprintf(topic, "LLBars/%s/button", chipName);
-        client.publish(topic, "long");
-      }
-    }
-    else
-    {
-      toggleAutoShow();
-      DEBUG_MSG("AUTOSHOW TOGGLED");
-    }
-  }
-  return result;
-}
-
 void reactToMusic()
 {
 
@@ -926,8 +800,9 @@ void connectionCheck()
     if (now - lastTryWifi > 15000)
     {
       WiFi.reconnect();
+      lastTryWifi = now;
     }
-    lastTryWifi = now;
+    
   }
 
   if (!client.connected())
@@ -935,8 +810,8 @@ void connectionCheck()
     if (now - lastTryMQTT > 15000)
     {
       setupMQTT(true);
+      lastTryMQTT = now;
     }
-    lastTryMQTT = now;
   }
 }
 
@@ -968,37 +843,11 @@ void loop()
   setTimes();
 
   blinkLed();
-  checkButton();
+
   client.loop();
   ArduinoOTA.handle();
 
-  if (configMode)
-  {
-    if (digitalRead(BUTTONPIN) == LOW)
-    {
-      flashLoop(CRGB::Tomato);
-    }
-    else
-    {
-      if (configured)
-      {
-        fill_solid(leds, NUM_LEDS, CRGB::Black);
-        fill_solid(leds + 5, pattern.getPosition() + 1, CRGB::Red);
-        fill_solid(leds + 15, pattern.getGroup() + 1, CRGB::Blue);
-        if (now - lastShowTime > 5)
-        {
-          lastShowTime = now;
-          FastLED.show();
-        }
-      }
-      else
-      {
-        flashLoop(CRGB::Gold);
-      }
-    }
-  }
-  else
-  {
+
     if (findMeFlash)
     {
       pattern.ballAFAP();
@@ -1012,7 +861,6 @@ void loop()
     {
       reactToMusic();
     }
-  }
   // lightshow();
   connectionCheck();
 }

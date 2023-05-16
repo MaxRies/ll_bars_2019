@@ -16,6 +16,7 @@
 #define FOREGROUND_NUM_LEDS 74 // 74
 #define BACKGROUND_NUM_LEDS 74 // 74
 #define NUM_LEDS 148           // 148
+#define NUM_STATUS_LEDS 13
 #define LED_PIN 12
 #define ONBOARDLED 2 // 1, 17, 21, 22 nicht.
 
@@ -131,7 +132,7 @@ void flash(int times, CRGB color)
   */
   for (int i = 0; i < times; i++)
   {
-    fill_solid(leds, NUM_LEDS, color);
+    fill_solid(fg_leds, NUM_STATUS_LEDS, color);
     FastLED.show(100);
     delay(250);
     fill_solid(leds, NUM_LEDS, CRGB::Black);
@@ -154,7 +155,7 @@ void flashLoop(CRGB color)
     lastBlink = now;
     if (!ledOn)
     {
-      fill_solid(leds, NUM_LEDS, color);
+      fill_solid(fg_leds, NUM_STATUS_LEDS, color);
       FastLED.show(100);
       ledOn = true;
     }
@@ -575,31 +576,12 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   {
     setTimes();
 
-    if (connTimes == 0)
-    {
       flashLoop(CRGB::Blue);
-    }
-    else
-    {
-      flashLoop(CRGB::Orange);
-    }
 
     if (millis() - startConnecting > (MQTT_WAIT * 1000))
     {
-      if (reconnect)
-      {
-        if (connTimes < 2)
-        {
-          connTimes++;
-          setupMQTT(true, connTimes);
-        }
-        else
-        {
-          flash(3, CRGB::Purple);
-          ESP.restart();
-        }
-      }
-      return;
+      flash(3, CRGB::Purple);
+      ESP.restart();
     }
     yield();
   }
@@ -713,6 +695,7 @@ void reactToMusic()
         if (syncMesg.direction == '0')
         {
           DEBUG_MSG("REAL BEAT \n");
+          DEBUG_MQTT("REAL BEAT!");
           pattern.setBeatPeriodMillis((double)syncMesg.beat_period_millis);
           pattern.setBeatDistinctiveness((double)syncMesg.beat_distinctivness);
           pattern.setMillisSinceBeat(0);
@@ -761,23 +744,20 @@ void connectionCheck()
   static long lastTryWifi = 0;
   static long lastTryMQTT = 0;
   // long now = millis();
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    if (now - lastTryWifi > 15000)
-    {
-      WiFi.reconnect();
-      lastTryWifi = now;
+  if (now - lastTryWifi > WIFI_WAIT * 1000) {
+    // Check every 30 seconds if wifi is there
+    if (WiFi.status() != WL_CONNECTED) {
+      // shit, no wifi. signal and then restart
+      flash(3, CRGB::Red);
+      ESP.restart();
     }
-    
-  }
-
-  if (!client.connected())
-  {
-    if (now - lastTryMQTT > 15000)
+    else if (!client.connected())
     {
-      setupMQTT(true);
-      lastTryMQTT = now;
+      // MQTT is dead. Signal and then restart
+      flash(3, CRGB::Purple);
+      ESP.restart();
     }
+    lastTryWifi = now;
   }
 }
 
@@ -792,7 +772,7 @@ void setup()
   setupMQTT();
   setupOTA();
   setupBeatListener();
-  flash(5, CRGB::Green);
+  flash(5, CRGB::White);
   startupMillis = millis();
 }
 

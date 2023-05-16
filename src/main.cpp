@@ -740,34 +740,6 @@ void reactToMusic()
   }
 }
 
-void lightshow()
-{
-
-  setTimes();
-
-  if (millisSinceBeat > 2000)
-  {
-    pattern.setBeatPeriodMillis((double)500.0);
-    pattern.setMillisSinceBeat((double)0.0);
-    millisSinceBeat = 0.0;
-    lastBeat = now;
-    DEBUG_MSG("FAKE BEAT\n");
-  }
-
-  pattern.baseChoser();
-
-  pattern.frontChoser();
-
-  pattern.strobeChoser();
-  if (now - lastShowTime > 5)
-  {
-    lastShowTime = now;
-    pattern.setLastShowTime(lastShowTime);
-    FastLED.setCorrection(TypicalSMD5050);
-    FastLED.show((uint8_t)pattern.getDimVal());
-  }
-}
-
 void blinkLed()
 {
   static long lastBlink = millis();

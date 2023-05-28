@@ -327,6 +327,9 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
   DEBUG_MSG("topic: %s \n", topic);
   DEBUG_MSG("message: %s \n", (char *)payload);
+  /* ==========================================
+  GROUP STUFF
+  ===========================================*/
   if (strstr(topic, "LLBars/groups") != NULL)
   {
     if (strstr(topic, "maxPos") != NULL)
@@ -369,6 +372,10 @@ void callback(char *topic, byte *payload, unsigned int length)
     DEBUG_MSG("Position Set: %u\n", position);
     configured = true;
   }
+  /* ==========================================
+  BRAIN STUFF
+  potentieller Einhakpunkt für DMX?
+  ===========================================*/
   else if (strstr(topic, "brain/mode") != NULL)
   {
     DEBUG_MSG("Config mode Message");
@@ -401,6 +408,9 @@ void callback(char *topic, byte *payload, unsigned int length)
       flash(3, CRGB::HotPink);
     }
   }
+  /* ==========================================
+  HARDWARE CONTROLLER STUFF
+  ===========================================*/
   else if (strstr(topic, "LLBars/Pattern") != NULL)
   {
     char value[20];
@@ -437,6 +447,10 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.speedChooser(number);
     DEBUG_MSG("SET SPEED TO: %i \n", number);
   }
+  /* ==========================================
+  WEBAPP parameters
+  ===========================================*/
+  ////////////// BASE ///////////////////////////////////
   else if (strstr(topic, "LLBars/basespeed") != NULL)
   {
     char value[20];
@@ -445,15 +459,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNbaseSpeed(number);
     DEBUG_MSG("SET basespeed TO: %i \n", number);
-  }
-  else if (strstr(topic, "LLBars/frontspeed") != NULL)
-  {
-    char value[20];
-    strncpy(value, (char *)payload, length);
-    int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 255);
-    pattern.setNfrontSpeed(number);
-    DEBUG_MSG("SET frontspeed TO: %i \n", number);
   }
   else if (strstr(topic, "LLBars/basedim") != NULL)
   {
@@ -464,6 +469,28 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNbaseDim(number);
     DEBUG_MSG("SET basedim TO: %i \n", number);
   }
+  else if (strstr(topic, "LLBars/basepat") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber < 0)
+      rawNumber = 0;
+    if (rawNumber > 9)
+      rawNumber = 9;
+    pattern.setNbasePattern(rawNumber);
+    pattern.setSettings();
+  }
+  ///////////////// FRONT ///////////////////////////////
+  else if (strstr(topic, "LLBars/frontspeed") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    int number = map(rawNumber, 0, 65536, 0, 255);
+    pattern.setNfrontSpeed(number);
+    DEBUG_MSG("SET frontspeed TO: %i \n", number);
+  }
   else if (strstr(topic, "LLBars/frontdim") != NULL)
   {
     char value[20];
@@ -473,6 +500,18 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNfrontDim(number);
     DEBUG_MSG("SET frontdim TO: %i \n", number);
   }
+  else if (strstr(topic, "LLBars/frontpat") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber < 0)
+      rawNumber = 0;
+    if (rawNumber > 9)
+      rawNumber = 9;
+    pattern.setNfrontPattern(rawNumber);
+  }
+  //////////////// STROBE ///////////////////////////////
   else if (strstr(topic, "LLBars/strobespeed") != NULL)
   {
     char value[20];
@@ -491,6 +530,18 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNstrobeDim(number);
     DEBUG_MSG("SET strobedim TO: %i \n", number);
   }
+  else if (strstr(topic, "LLBars/strobepat") != NULL)
+  {
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int rawNumber = atoi(value);
+    if (rawNumber < 0)
+      rawNumber = 0;
+    if (rawNumber > 4)
+      rawNumber = 4;
+    pattern.setNstrobePattern(rawNumber);
+  }
+  ///////////////// OTHER STUFF 
   else if (strstr(topic, "LLBars/showpattern") != NULL)
   {
     char value[20];
@@ -503,44 +554,13 @@ void callback(char *topic, byte *payload, unsigned int length)
     sprintf(message, "showpattern: %i", number);
     DEBUG_MQTT(message);
   }
+
   else if (strstr(topic, "LLBars/activate") != NULL)
   {
     pattern.animationActive = !pattern.animationActive;
   }
-  else if (strstr(topic, "LLBars/basepat") != NULL)
-  {
-    char value[20];
-    strncpy(value, (char *)payload, length);
-    int rawNumber = atoi(value);
-    if (rawNumber < 0)
-      rawNumber = 0;
-    if (rawNumber > 9)
-      rawNumber = 9;
-    pattern.setNbasePattern(rawNumber);
-    pattern.setSettings();
-  }
-  else if (strstr(topic, "LLBars/frontpat") != NULL)
-  {
-    char value[20];
-    strncpy(value, (char *)payload, length);
-    int rawNumber = atoi(value);
-    if (rawNumber < 0)
-      rawNumber = 0;
-    if (rawNumber > 9)
-      rawNumber = 9;
-    pattern.setNfrontPattern(rawNumber);
-  }
-  else if (strstr(topic, "LLBars/strobepat") != NULL)
-  {
-    char value[20];
-    strncpy(value, (char *)payload, length);
-    int rawNumber = atoi(value);
-    if (rawNumber < 0)
-      rawNumber = 0;
-    if (rawNumber > 4)
-      rawNumber = 4;
-    pattern.setNstrobePattern(rawNumber);
-  }
+
+  
   else if (strstr(topic, "LLBars/fakebeat") != NULL)
   {
     // FAKEBEAT HERE

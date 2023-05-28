@@ -205,9 +205,6 @@ public:
 	void colorChooser(int number);
 	void speedChooser(int number);
 
-	void saveValues();
-	void getValues();
-
 	void newBeat();
 	void nextPosition();
 	void nextGroup();

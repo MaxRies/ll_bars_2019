@@ -104,12 +104,6 @@ const char *password = "72180323197714590513";
 const char *mqtt_server = "192.168.178.31";
 #endif
 
-#ifdef K95WIFI
-const char *ssid = "p0rnStream247";
-const char *password = "Party_0815";
-const char *mqtt_server = "192.168.178.23";
-#endif
-
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -435,7 +429,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNbaseSpeed(number);
     DEBUG_MSG("SET basespeed TO: %i \n", number);
-    pattern.saveValues();
   }
   else if (strstr(topic, "frontspeed") != NULL)
   {
@@ -445,7 +438,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNfrontSpeed(number);
     DEBUG_MSG("SET frontspeed TO: %i \n", number);
-    pattern.saveValues();
   }
   else if (strstr(topic, "basedim") != NULL)
   {
@@ -455,7 +447,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNbaseDim(number);
     DEBUG_MSG("SET basedim TO: %i \n", number);
-    pattern.saveValues();
   }
   else if (strstr(topic, "frontdim") != NULL)
   {
@@ -465,7 +456,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNfrontDim(number);
     DEBUG_MSG("SET frontdim TO: %i \n", number);
-    pattern.saveValues();
   }
   else if (strstr(topic, "strobespeed") != NULL)
   {
@@ -475,7 +465,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNstrobeSpeed(number);
     DEBUG_MSG("SET strobespeed TO: %i \n", number);
-    pattern.saveValues();
   }
   else if (strstr(topic, "strobedim") != NULL)
   {
@@ -485,7 +474,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = map(rawNumber, 0, 65536, 0, 255);
     pattern.setNstrobeDim(number);
     DEBUG_MSG("SET strobedim TO: %i \n", number);
-    pattern.saveValues();
   }
   else if (strstr(topic, "showpattern") != NULL)
   {

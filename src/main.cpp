@@ -331,6 +331,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     if (strstr(topic, "maxPos") != NULL)
     {
+      // LLBars/groups/maxPos
       char value[20];
       strncpy(value, (char *)payload, length);
       int maxPos = atoi(value);
@@ -339,6 +340,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     }
     else if (strstr(topic, "maxGroups") != NULL)
     {
+      // LLBars/groups/maxPos
       char value[20];
       strncpy(value, (char *)payload, length);
       int maxGroup = atoi(value);
@@ -346,33 +348,28 @@ void callback(char *topic, byte *payload, unsigned int length)
       DEBUG_MSG("MaxGroup Set: %i\n", maxGroup);
     }
   }
-  else if (strstr(topic, "group") != NULL)
+  else if (strstr(topic, "group/set") != NULL)
   {
-    if (strstr(topic, "set") != NULL)
-    {
-      // Always accept group or position number!
-      char value[20];
-      strncpy(value, (char *)payload, length);
-      int newGroup = atoi(value);
-      setGroup(newGroup);
-      DEBUG_MSG("Group Set: %u\n", newGroup);
-      configured = true;
-    }
+    // Always accept group or position number!
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int newGroup = atoi(value);
+    setGroup(newGroup);
+    DEBUG_MSG("Group Set: %u\n", newGroup);
+    configured = true;
+  
   }
-  else if (strstr(topic, "position") != NULL)
+  else if (strstr(topic, "position/set") != NULL)
   {
-    if (strstr(topic, "set") != NULL)
-    {
-      // Always accept group or position number!
-      char value[20];
-      strncpy(value, (char *)payload, length);
-      int newPosition = atoi(value);
-      setPosition(newPosition);
-      DEBUG_MSG("Position Set: %u\n", position);
-      configured = true;
-    }
+    // Always accept group or position number!
+    char value[20];
+    strncpy(value, (char *)payload, length);
+    int newPosition = atoi(value);
+    setPosition(newPosition);
+    DEBUG_MSG("Position Set: %u\n", position);
+    configured = true;
   }
-  else if (strstr(topic, "mode") != NULL)
+  else if (strstr(topic, "brain/mode") != NULL)
   {
     DEBUG_MSG("Config mode Message");
     char value[50];
@@ -404,7 +401,7 @@ void callback(char *topic, byte *payload, unsigned int length)
       flash(3, CRGB::HotPink);
     }
   }
-  else if (strstr(topic, "Pattern") != NULL)
+  else if (strstr(topic, "LLBars/Pattern") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -413,7 +410,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.patternChooser(patternNumber);
     DEBUG_MSG("SET PATTERN NUMBER TO: %i \n", patternNumber);
   }
-  else if (strstr(topic, "Dimm") != NULL)
+  else if (strstr(topic, "LLBars/Dimm") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -422,7 +419,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setDimVal(dimFactor);
     DEBUG_MSG("SET DIM FACTOR TO: %i \n", dimFactor);
   }
-  else if (strstr(topic, "Color") != NULL)
+  else if (strstr(topic, "LLBars/Color") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -431,7 +428,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.colorChooser(colorNumber);
     DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
   }
-  else if (strstr(topic, "Speed") != NULL)
+  else if (strstr(topic, "LLBars/Speed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -440,7 +437,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.speedChooser(number);
     DEBUG_MSG("SET SPEED TO: %i \n", number);
   }
-  else if (strstr(topic, "basespeed") != NULL)
+  else if (strstr(topic, "LLBars/basespeed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -449,7 +446,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNbaseSpeed(number);
     DEBUG_MSG("SET basespeed TO: %i \n", number);
   }
-  else if (strstr(topic, "frontspeed") != NULL)
+  else if (strstr(topic, "LLBars/frontspeed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -458,7 +455,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNfrontSpeed(number);
     DEBUG_MSG("SET frontspeed TO: %i \n", number);
   }
-  else if (strstr(topic, "basedim") != NULL)
+  else if (strstr(topic, "LLBars/basedim") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -467,7 +464,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNbaseDim(number);
     DEBUG_MSG("SET basedim TO: %i \n", number);
   }
-  else if (strstr(topic, "frontdim") != NULL)
+  else if (strstr(topic, "LLBars/frontdim") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -476,7 +473,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNfrontDim(number);
     DEBUG_MSG("SET frontdim TO: %i \n", number);
   }
-  else if (strstr(topic, "strobespeed") != NULL)
+  else if (strstr(topic, "LLBars/strobespeed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -485,7 +482,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNstrobeSpeed(number);
     DEBUG_MSG("SET strobespeed TO: %i \n", number);
   }
-  else if (strstr(topic, "strobedim") != NULL)
+  else if (strstr(topic, "LLBars/strobedim") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -494,7 +491,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setNstrobeDim(number);
     DEBUG_MSG("SET strobedim TO: %i \n", number);
   }
-  else if (strstr(topic, "showpattern") != NULL)
+  else if (strstr(topic, "LLBars/showpattern") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -506,7 +503,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     sprintf(message, "showpattern: %i", number);
     DEBUG_MQTT(message);
   }
-  else if (strstr(topic, "activate") != NULL)
+  else if (strstr(topic, "LLBars/activate") != NULL)
   {
     pattern.animationActive = !pattern.animationActive;
   }
@@ -557,6 +554,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   else if (strstr(topic, "flash") != NULL)
   {
+    // Topic for find-me-function
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
@@ -593,6 +591,12 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
     yield();
   }
 
+  /*
+  =============================================
+  PUBLISHERS
+  =============================================
+  */
+
   char topic0[100];
   sprintf(topic0, "LLBars/hello");
   client.publish(topic0, chipName);
@@ -601,6 +605,12 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   sprintf(topicIP, "LLBars/%s/IP", chipName);
   client.publish(topicIP, WiFi.localIP().toString().c_str());
 
+  /*
+  =============================================
+  SUBSCRIBERS
+  =============================================
+  */
+  
   char topic1[100];
   sprintf(topic1, "LLBars/%s/position/set", chipName);
   client.subscribe(topic1);
@@ -674,7 +684,7 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   DEBUG_MSG("Subscribed to:");
   DEBUG_MSG(topic1);
 
-  client.subscribe("activate");
+  client.subscribe("LLBars/activate");
   DEBUG_MSG("Subscribed to: activate\n");
 
   client.subscribe("brain/mode");

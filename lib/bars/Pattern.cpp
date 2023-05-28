@@ -721,6 +721,10 @@ void Pattern::fillWhite()
 
 CRGB Pattern::colors(int color)
 {
+	/*
+	Picks a color based on a number. Essentially a shitty implementation of
+	a color palette.
+	*/
 	CRGB ret;
 	switch (color)
 	{
@@ -1415,53 +1419,6 @@ CRGB Pattern::dimByVal(CRGB &color, double Value)
 	col.b = Value / 255 * color.b;
 
 	return col;
-}
-
-void Pattern::saveValues()
-{
-
-	valsToSave previousValues{
-		nbaseDim,
-		nbaseSpeed,
-		nfrontDim,
-		nfrontSpeed,
-		nstrobeDim,
-		nstrobeSpeed,
-		false,
-		false};
-
-	EEPROM.begin(100);
-	EEPROM.put(0, previousValues);
-	EEPROM.commit();
-	EEPROM.end();
-	DEBUG_MSG("VALUES SAVED!");
-}
-
-void Pattern::getValues()
-{
-	valsToSave retrieved;
-	EEPROM.begin(100);
-	EEPROM.get(0, retrieved);
-	if (retrieved.pristine0)
-	{
-		DEBUG_MSG("FLASH PRISTINE, NO VALUES READ!");
-		EEPROM.end();
-	}
-	else if (retrieved.pristine1)
-	{
-		DEBUG_MSG("FLASH PRISTINE, NO VALUES READ!");
-		EEPROM.end();
-	}
-	else
-	{
-		nbaseDim = retrieved.nBaseDim;
-		nbaseSpeed = retrieved.nBaseSpeed;
-		nfrontDim = retrieved.nFrontDim;
-		nfrontSpeed = retrieved.nFrontSpeed;
-		nstrobeDim = retrieved.nStrobeDim;
-		nstrobeSpeed = retrieved.nStrobeSpeed;
-		DEBUG_MSG("FLASH VALUES RETRIEVED!");
-	}
 }
 
 void Pattern::nextPosition()

@@ -12,6 +12,18 @@
 #include <LedFunctions.h>
 #include <Protocol.h>
 
+// STATUS COLOS
+#define STARTUP_COLOR CRGB::White
+#define WIFI_WAIT_COLOR CRGB::Red
+#define WIFI_SUCCESS_COLOR CRGB::Yellow
+#define WIFI_FAILURE_COLOR CRGB::Blue
+#define WIFI_LOST_COLOR CRGB::Blue
+#define MQTT_WAIT_COLOR CRGB::Purple
+#define MQTT_SUCCESS_COLOR CRGB::Orange
+#define MQTT_FAILURE_COLOR  CRGB::Indigo
+#define SUCCESS_COLOR CRGB::Green
+
+
 // LED DEFINES
 #define FOREGROUND_NUM_LEDS 74 // 74
 #define BACKGROUND_NUM_LEDS 74 // 74
@@ -227,7 +239,7 @@ void setupLEDs()
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
-  flash(3, CRGB::Red);
+  flash(3, STARTUP_COLOR);
   // pattern.getValues();
 }
 
@@ -297,15 +309,16 @@ void setup_wifi()
   while (WiFi.status() != WL_CONNECTED)
   {
     setTimes();
-    flashLoop(CRGB::Red);
+    flashLoop(WIFI_WAIT_COLOR);
     if (now - startConnection > (WIFI_WAIT * 1000))
     {
-      flash(1, CRGB::Yellow);
+      // no Wifi found...
+      flash(3, WIFI_FAILURE_COLOR);
       ESP.restart();
     }
     yield();
   }
-  flash(3, CRGB::ForestGreen);
+  flash(3, WIFI_SUCCESS_COLOR);
   DEBUG_MSG("WiFi connected\n");
 }
 
@@ -569,11 +582,11 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   {
     setTimes();
 
-      flashLoop(CRGB::Blue);
+      flashLoop(MQTT_WAIT_COLOR);
 
     if (millis() - startConnecting > (MQTT_WAIT * 1000))
     {
-      flash(3, CRGB::Purple);
+      flash(3, MQTT_FAILURE_COLOR);
       ESP.restart();
     }
     yield();
@@ -639,6 +652,7 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/strobedim");
   DEBUG_MSG("Subscribed to: LLBars/strobedim\n");
 
+  // #TODO kann vielleicht weg
   client.subscribe("LLBars/showpattern");
   DEBUG_MSG("Subscribed to: LLBars/showpattern\n");
 
@@ -734,23 +748,22 @@ void blinkLed()
 
 void connectionCheck()
 {
-  static long lastTryWifi = 0;
-  static long lastTryMQTT = 0;
+  static long lastWifiCheck = 0;
   // long now = millis();
-  if (now - lastTryWifi > WIFI_WAIT * 1000) {
+  if (now - lastWifiCheck > WIFI_WAIT * 1000) {
     // Check every 30 seconds if wifi is there
     if (WiFi.status() != WL_CONNECTED) {
       // shit, no wifi. signal and then restart
-      flash(3, CRGB::Red);
+      flash(3, WIFI_LOST_COLOR);
       ESP.restart();
     }
     else if (!client.connected())
     {
       // MQTT is dead. Signal and then restart
-      flash(3, CRGB::Purple);
+      flash(3, MQTT_FAILURE_COLOR);
       ESP.restart();
     }
-    lastTryWifi = now;
+    lastWifiCheck = now;
   }
 }
 
@@ -765,7 +778,7 @@ void setup()
   setupMQTT();
   setupOTA();
   setupBeatListener();
-  flash(5, CRGB::White);
+  flash(3, SUCCESS_COLOR);
   startupMillis = millis();
 }
 
@@ -777,6 +790,7 @@ void loop()
 
   client.loop();
   ArduinoOTA.handle();
+  connectionCheck();
 
 
     if (findMeFlash)
@@ -792,5 +806,4 @@ void loop()
     {
       reactToMusic();
     }
-  connectionCheck();
 }

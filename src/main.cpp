@@ -282,6 +282,11 @@ void setupOTA()
 void setup_wifi()
 {
   delay(10);
+  // delay a random time, so not all bars try to connect at once
+  randomSeed(analogRead(A0)); // true random
+  delay(random(100, 4000));  // delay of 100ms to 3000ms
+  randomSeed(1103);         // reset randomness again to vanity number
+
   // We start by connecting to a WiFi network
   DEBUG_MSG("Connecting to %s", ssid);
 

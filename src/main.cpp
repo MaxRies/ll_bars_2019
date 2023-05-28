@@ -42,6 +42,7 @@
 
 // WIFI DEFINES
 #define BRAINWIFI
+#define MAX_STARTUP_WAIT 4000
 #define WIFI_WAIT 30
 #define MQTT_WAIT 5
 const int ticker_port = 1103;
@@ -296,7 +297,7 @@ void setup_wifi()
   delay(10);
   // delay a random time, so not all bars try to connect at once
   randomSeed(analogRead(A0)); // true random
-  delay(random(100, 4000));  // delay of 100ms to 3000ms
+  delay(random(100, MAX_STARTUP_WAIT));  // delay of 100ms to MAX_STARTUP_WAIT
   randomSeed(1103);         // reset randomness again to vanity number
 
   // We start by connecting to a WiFi network

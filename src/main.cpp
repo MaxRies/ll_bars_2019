@@ -42,7 +42,7 @@
 
 // WIFI DEFINES
 #define BRAINWIFI
-#define MAX_STARTUP_WAIT 4000
+#define MAX_STARTUP_WAIT 1000
 #define WIFI_WAIT 30
 #define MQTT_WAIT 5
 const int ticker_port = 1103;
@@ -128,7 +128,7 @@ void setTimes()
   millisSinceSync = now - lastSync;
   millisSinceBeat = now - lastBeat;
   pattern.setMillisSinceBeat((double)millisSinceBeat);
-  pattern.setStrobeTime(millis() - pattern.getStrobeStart());
+  pattern.setStrobeTime(now - pattern.getStrobeStart());
 }
 
 /* LED FUNCTIONS */
@@ -413,6 +413,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   ===========================================*/
   else if (strstr(topic, "LLBars/Pattern") != NULL)
   {
+    // Value range: 0 -> 94
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
@@ -569,7 +570,11 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setMillisSinceBeat((double)0.0);
     millisSinceBeat = 0.0;
     lastBeat = now;
-    DEBUG_MSG("MQTT BEAT\n");
+    pattern.setStrobeStart(now);
+    pattern.setFirstStrobe(true);
+    pattern.setStrobeStep(0);
+    setTimes();
+    DEBUG_MQTT("MQTT BEAT\n");
   }
 
   else if (strstr(topic, "flash") != NULL)
@@ -623,7 +628,7 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
 
   char topicIP[100];
   sprintf(topicIP, "LLBars/%s/IP", chipName);
-  client.publish(topicIP, WiFi.localIP().toString().c_str());
+  client.publish(topicIP, WiFi.localIP().toString().c_str(), true);
 
   /*
   =============================================
@@ -665,11 +670,18 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/Speed");
   DEBUG_MSG("Subscribed to: LLBars/Speed\n");
 
+  // =========== SPEED
   client.subscribe("LLBars/basespeed");
   DEBUG_MSG("Subscribed to: LLBars/basespeed\n");
 
   client.subscribe("LLBars/frontspeed");
   DEBUG_MSG("Subscribed to: LLBars/frontspeed\n");
+
+
+  client.subscribe("LLBars/strobespeed");
+  DEBUG_MSG("Subscribed to: LLBars/strobespeed\n");
+
+// =========== DIMMER
 
   client.subscribe("LLBars/basedim");
   DEBUG_MSG("Subscribed to: LLBars/basedim\n");
@@ -677,12 +689,10 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/frontdim");
   DEBUG_MSG("Subscribed to: LLBars/frontdim\n");
 
-  client.subscribe("LLBars/strobespeed");
-  DEBUG_MSG("Subscribed to: LLBars/strobespeed\n");
-
   client.subscribe("LLBars/strobedim");
   DEBUG_MSG("Subscribed to: LLBars/strobedim\n");
 
+// =========== PATTERN
   // #TODO kann vielleicht weg
   client.subscribe("LLBars/showpattern");
   DEBUG_MSG("Subscribed to: LLBars/showpattern\n");
@@ -696,6 +706,8 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/strobepat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/strobepat");
 
+
+// ADMINISTRATION
   client.subscribe("LLBars/fakebeat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/fakebeat");
 
@@ -732,13 +744,17 @@ void reactToMusic()
         syncMesg.create(recvBuffer, packetSize);
         if (syncMesg.direction == '0')
         {
+          long now = millis()
           DEBUG_MSG("REAL BEAT \n");
           DEBUG_MQTT("REAL BEAT!");
           pattern.setBeatPeriodMillis((double)syncMesg.beat_period_millis);
           pattern.setBeatDistinctiveness((double)syncMesg.beat_distinctivness);
           pattern.setMillisSinceBeat(0);
+          pattern.setStrobeStart(now);
+          pattern.setStrobeStep(0);
+          setTimes();
           millisSinceBeat = 0;
-          lastBeat = millis();
+          lastBeat = now;
         }
       }
     }

@@ -763,6 +763,15 @@ CRGB Pattern::colors(int color)
 	case 9:
 		ret = CRGB::Fuchsia;
 		break;
+	case 10:
+		ret = CRGB::ForestGreen;
+		break;
+	case 11:
+		ret = CRGB::Magenta;
+		break;
+	case 12:
+		ret = CRGB::Azure;
+		break;
 	default:
 		ret = CRGB::Black;
 		break;

@@ -749,6 +749,10 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/basecolor");
   DEBUG_MSG("SUBSCRIBED TO LLBars/basecolor");
 
+  // #TODO implement basecolor callback
+  client.subscribe("LLBars/rgbbasecolor");
+  DEBUG_MSG("SUBSCRIBED TO LLBars/rgbbasecolor");
+
   // ============ FRONT
 
   client.subscribe("LLBars/frontspeed");
@@ -760,9 +764,11 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/frontpat");
   DEBUG_MSG("SUBSCRIBED TO LLBars/frontpat");
 
-  // #TODO implement frontcolor callback
   client.subscribe("LLBars/frontcolor");
   DEBUG_MSG("SUBSCRIBED TO LLBars/frontcolor");
+
+  client.subscribe("LLBars/rgbfrontcolor");
+  DEBUG_MSG("SUBSCRIBED TO LLBars/rgbfrontcolor");
 
   // ============= STROBE
   client.subscribe("LLBars/strobespeed");
@@ -774,9 +780,11 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   client.subscribe("LLBars/strobepat");
   DEBUG_MSG("SUBSCRIBED TO LLbars/strobepat");
 
-  // #TODO implement strobecolor callback
   client.subscribe("LLBars/strobecolor");
   DEBUG_MSG("SUBSCRIBED TO LLBars/strobecolor");
+
+  client.subscribe("LLBars/rgbstrobecolor");
+  DEBUG_MSG("SUBSCRIBED TO LLBars/rgbstrobecolor");
 
 // =========== PATTERN
   // #TODO kann vielleicht weg ist fuer rotary knopf

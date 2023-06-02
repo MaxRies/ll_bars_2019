@@ -298,7 +298,7 @@ void setup_wifi()
   // delay a random time, so not all bars try to connect at once
   randomSeed(analogRead(A0)); // true random
   delay(random(100, MAX_STARTUP_WAIT));  // delay of 100ms to MAX_STARTUP_WAIT
-  randomSeed(1103);         // reset randomness again to vanity number
+  randomSeed(2206);         // reset randomness again to vanity number
 
   // We start by connecting to a WiFi network
   DEBUG_MSG("Connecting to %s", ssid);
@@ -334,7 +334,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     if (strstr(topic, "maxPos") != NULL)
     {
-      // LLBars/groups/maxPos
+      // LLBars/groups/$groupnumber/maxPos
       char value[20];
       strncpy(value, (char *)payload, length);
       int maxPos = atoi(value);
@@ -343,7 +343,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     }
     else if (strstr(topic, "maxGroups") != NULL)
     {
-      // LLBars/groups/maxPos
+      // LLBars/groups/maxGroups
       char value[20];
       strncpy(value, (char *)payload, length);
       int maxGroup = atoi(value);
@@ -413,11 +413,11 @@ void callback(char *topic, byte *payload, unsigned int length)
   ===========================================*/
   else if (strstr(topic, "LLBars/Pattern") != NULL)
   {
-    // Value range: 0 -> 94
+    // Value range: 0 -> 103
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int patternNumber = map(rawNumber, 0, 65536, 0, 94);
+    int patternNumber = constrain(rawNumber, 0, 103);
     pattern.patternChooser(patternNumber);
     DEBUG_MSG("SET PATTERN NUMBER TO: %i \n", patternNumber);
   }
@@ -435,7 +435,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int colorNumber = map(rawNumber, 0, 65536, 0, 100);
+    int colorNumber = constrain(rawNumber, 0, 99);
     pattern.colorChooser(colorNumber);
     DEBUG_MSG("SET COLOR NUMBER TO: %i \n", colorNumber);
   }
@@ -444,7 +444,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 28);
+    int number = constrain(rawNumber, 0, 28);
     pattern.speedChooser(number);
     DEBUG_MSG("SET SPEED TO: %i \n", number);
   }

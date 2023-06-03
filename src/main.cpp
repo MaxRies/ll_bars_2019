@@ -411,6 +411,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   /* ==========================================
   HARDWARE CONTROLLER STUFF
   ===========================================*/
+  /*
   else if (strstr(topic, "LLBars/Pattern") != NULL)
   {
     // Value range: 0 -> 103
@@ -420,7 +421,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     int patternNumber = constrain(rawNumber, 0, 103);
     pattern.patternChooser(patternNumber);
     DEBUG_MSG("SET PATTERN NUMBER TO: %i \n", patternNumber);
-  }
+  }*/
   else if (strstr(topic, "LLBars/Dimm") != NULL)
   {
     char value[20];
@@ -430,6 +431,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setDimVal(dimFactor);
     DEBUG_MSG("SET DIM FACTOR TO: %i \n", dimFactor);
   }
+  /*
   else if (strstr(topic, "LLBars/Color") != NULL)
   {
     char value[20];
@@ -447,12 +449,12 @@ void callback(char *topic, byte *payload, unsigned int length)
     int number = constrain(rawNumber, 0, 28);
     pattern.speedChooser(number);
     DEBUG_MSG("SET SPEED TO: %i \n", number);
-  }
+  }*/
   /* ==========================================
   WEBAPP parameters
   ===========================================*/
   ////////////// BASE ///////////////////////////////////
-  else if (strstr(topic, "LLBars/basespeed") != NULL)
+  else if (strstr(topic, "LLBars/base_speed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
@@ -482,7 +484,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = constrain(rawNumber, 0, 12);
+    int number = constrain(rawNumber, 0, 14);
     pattern.setNbaseColor(number);
     pattern.setSettings();
   }
@@ -501,12 +503,12 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setBaseColor(CRGB(r,g,b));
   }
   ///////////////// FRONT ///////////////////////////////
-  else if (strstr(topic, "LLBars/frontspeed") != NULL)
+  else if (strstr(topic, "LLBars/front_speed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 255);
+    int number = constrain(rawNumber, 0, 255);
     pattern.setNfrontSpeed(number);
     DEBUG_MSG("SET frontspeed TO: %i \n", number);
   }
@@ -515,7 +517,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 255);
+    int number = constrain(rawNumber, 0, 255);
     pattern.setNfrontDim(number);
     DEBUG_MSG("SET frontdim TO: %i \n", number);
   }
@@ -535,7 +537,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = constrain(rawNumber, 0, 12);
+    int number = constrain(rawNumber, 0, 14);
     pattern.setNfrontColor(number);
     pattern.setSettings();
   }
@@ -554,12 +556,12 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setFrontColor(CRGB(r,g,b));
   }
   //////////////// STROBE ///////////////////////////////
-  else if (strstr(topic, "LLBars/strobespeed") != NULL)
+  else if (strstr(topic, "LLBars/strobe_speed") != NULL)
   {
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 255);
+    int number = constrain(rawNumber, 0, 255);
     pattern.setNstrobeSpeed(number);
     DEBUG_MSG("SET strobespeed TO: %i \n", number);
   }
@@ -568,7 +570,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = map(rawNumber, 0, 65536, 0, 255);
+    int number = constrain(rawNumber, 0, 255);
     pattern.setNstrobeDim(number);
     DEBUG_MSG("SET strobedim TO: %i \n", number);
   }
@@ -588,7 +590,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     char value[20];
     strncpy(value, (char *)payload, length);
     int rawNumber = atoi(value);
-    int number = constrain(rawNumber, 0, 12);
+    int number = constrain(rawNumber, 0, 14);
     pattern.setNstrobeColor(number);
     pattern.setSettings();
   }
@@ -607,6 +609,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     pattern.setStrobeColor(CRGB(r,g,b));
   }
   ///////////////// OTHER STUFF 
+  /*
   else if (strstr(topic, "LLBars/showpattern") != NULL)
   {
     char value[20];
@@ -619,6 +622,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     sprintf(message, "showpattern: %i", number);
     DEBUG_MQTT(message);
   }
+  */
 
   else if (strstr(topic, "LLBars/activate") != NULL)
   {
@@ -736,8 +740,8 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   DEBUG_MSG("Subscribed to: LLBars/Speed\n");
 
   // =========== BASE
-  client.subscribe("LLBars/basespeed");
-  DEBUG_MSG("Subscribed to: LLBars/basespeed\n");
+  client.subscribe("LLBars/base_speed");
+  DEBUG_MSG("Subscribed to: LLBars/base_speed\n");
 
   client.subscribe("LLBars/basedim");
   DEBUG_MSG("Subscribed to: LLBars/basedim\n");
@@ -755,8 +759,8 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
 
   // ============ FRONT
 
-  client.subscribe("LLBars/frontspeed");
-  DEBUG_MSG("Subscribed to: LLBars/frontspeed\n");
+  client.subscribe("LLBars/front_speed");
+  DEBUG_MSG("Subscribed to: LLBars/front_speed\n");
 
   client.subscribe("LLBars/frontdim");
   DEBUG_MSG("Subscribed to: LLBars/frontdim\n");
@@ -771,8 +775,8 @@ void setupMQTT(bool reconnect = false, int connTimes = 0)
   DEBUG_MSG("SUBSCRIBED TO LLBars/rgbfrontcolor");
 
   // ============= STROBE
-  client.subscribe("LLBars/strobespeed");
-  DEBUG_MSG("Subscribed to: LLBars/strobespeed\n");
+  client.subscribe("LLBars/strobe_speed");
+  DEBUG_MSG("Subscribed to: LLBars/strobe_speed\n");
 
   client.subscribe("LLBars/strobedim");
   DEBUG_MSG("Subscribed to: LLBars/strobedim\n");
@@ -828,17 +832,18 @@ void reactToMusic()
         syncMesg.create(recvBuffer, packetSize);
         if (syncMesg.direction == '0')
         {
-          long now = millis()
+          long now = millis();
           DEBUG_MSG("REAL BEAT \n");
-          DEBUG_MQTT("REAL BEAT!");
           pattern.setBeatPeriodMillis((double)syncMesg.beat_period_millis);
+          pattern.setMillisSinceBeat(0.0);
+          // Falls mal keine Pattern bei Beat LED: Diese zeile sorgt dafür.
           pattern.setBeatDistinctiveness((double)syncMesg.beat_distinctivness);
-          pattern.setMillisSinceBeat(0);
+          millisSinceBeat = 0.0;
+          lastBeat = now;
           pattern.setStrobeStart(now);
           pattern.setStrobeStep(0);
           setTimes();
-          millisSinceBeat = 0;
-          lastBeat = now;
+          DEBUG_MQTT("REAL BEAT!");
         }
       }
     }

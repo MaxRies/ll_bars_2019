@@ -32,7 +32,7 @@ Pattern::Pattern(CRGB *leds, size_t length)
 	nstrobeDim = 200.0;
 
 	dimVal = 255;
-	dutyCycle = 1;
+	dutyCycle = 100;
 	group = 0;
 	position = 0;
 	maxGroup = 0;
@@ -771,6 +771,12 @@ CRGB Pattern::colors(int color)
 		break;
 	case 12:
 		ret = CRGB::Azure;
+		break;
+	case 13:
+		ret = CRGB::DarkSeaGreen;
+		break;
+	case 14:
+		ret = CRGB::HotPink;
 		break;
 	default:
 		ret = CRGB::Black;
